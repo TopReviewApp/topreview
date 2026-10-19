@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi portal · TopReview</title>
+<style>
+  /* Portal del dueño: sus locales en tarjetas, alta de local y credenciales; el portal principal además da de alta otros portales. Misma paleta que el resto: crema, blanco, azul Klein y azul navío. */
+  :root { --bg:#f7f1e3; --panel:#fff; --ink:#0b1f3a; --muted:#4b5a73; --line:#e3d9c4; --klein:#002fa7; --klein-dark:#00227a; --tint:#e6ecfa; --star:#f2b705; --good:#16824a; --bad:#c92a42; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:var(--ink); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .brand { font-weight:900; font-size:22px; } .brand span { color:#9fb4ee; }
+  .role { font-size:15px; font-weight:700; color:#fff; padding-left:12px; border-left:1px solid #2c4166; background:none; border-top:0; border-right:0; border-bottom:0; cursor:pointer; font-family:inherit; }
+  .role:hover { color:#9fb4ee; }
+  header .sp { flex:1; }
+  .out { color:#c9d3e6; font-size:13px; text-decoration:none; border:1px solid #2c4166; border-radius:8px; padding:5px 10px; }
+  .out:hover { color:#fff; border-color:#9fb4ee; }
+  .sub { font-size:14px; color:var(--muted); margin:-6px 0 12px; max-width:70ch; }
+  .accts { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  main { max-width:1200px; margin:0 auto; padding:20px 16px 60px; }
+  h2 { font-size:18px; margin:26px 0 12px; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .kpi { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .kpi small { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .kpi b { display:block; font-size:28px; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .venues { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+  .v { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .v.off { opacity:.55; }
+  .v-head { display:flex; align-items:flex-start; gap:10px; }
+  .v-head h3 { margin:0; font-size:18px; flex:1; min-width:0; overflow-wrap:anywhere; }
+  .chip { font-size:11px; font-weight:700; border-radius:99px; padding:3px 8px; white-space:nowrap; }
+  .chip.on { background:#e3f4ea; color:var(--good); } .chip.offc { background:#f6e3e6; color:var(--bad); }
+  .login { font-size:13px; color:var(--muted); } .login code { background:var(--tint); color:var(--klein); padding:1px 6px; border-radius:6px; }
+  .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+  .stats div { background:var(--bg); border-radius:10px; padding:8px 4px; text-align:center; }
+  .stats b { display:block; font-size:17px; font-variant-numeric:tabular-nums; }
+  .stats small { font-size:11px; color:var(--muted); }
+  .warn { font-size:13px; background:#fff7e6; border:1px solid #f3d9a4; color:#8a5a00; border-radius:10px; padding:7px 10px; }
+  .acts { display:flex; flex-wrap:wrap; gap:6px; }
+  .acts a, .acts button { font:inherit; font-size:13px; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:9px; padding:6px 10px; text-decoration:none; cursor:pointer; }
+  .acts a.main { background:var(--klein); border-color:var(--klein); color:#fff; font-weight:700; }
+  .acts a.main:hover { background:var(--klein-dark); }
+  .acts button:hover, .acts a:not(.main):hover { border-color:var(--klein); color:var(--klein); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; }
+  form.new { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  form.new .full { grid-column:1/-1; }
+  @media (max-width:640px) { form.new { grid-template-columns:1fr; } .stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  label { font-size:13px; color:var(--muted); display:block; margin-bottom:4px; }
+  input { font:inherit; border:1px solid #cfc5ae; border-radius:10px; padding:9px 12px; width:100%; background:#fff; color:var(--ink); }
+  input:focus { outline:2px solid var(--klein); outline-offset:1px; }
+  .note { font-size:12px; color:var(--muted); margin:6px 0 0; }
+  .btn { font:inherit; background:var(--klein); color:#fff; border:0; border-radius:10px; padding:10px 18px; font-weight:700; cursor:pointer; }
+  .btn:hover { background:var(--klein-dark); }
+  .btn.ghost { background:var(--tint); color:var(--klein); }
+  dialog { border:0; border-radius:18px; padding:0; max-width:440px; width:calc(100% - 32px); box-shadow:0 30px 80px #0b1f3a55; }
+  dialog::backdrop { background:#0b1f3a88; }
+  .dlg { padding:22px; }
+  .dlg h3 { margin:0 0 4px; font-size:20px; }
+  .cred { background:var(--bg); border-radius:12px; padding:12px 14px; margin:14px 0; display:grid; grid-template-columns:auto 1fr; gap:6px 12px; font-size:14px; }
+  .cred span { color:var(--muted); } .cred b { font-family:ui-monospace,Menlo,monospace; overflow-wrap:anywhere; }
+  .dlg .row { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .empty { color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Top<span>Review</span></div>
+  <button class="role" id="pName" title="Cambiar el nombre del portal">Mi portal</button>
+  <div class="sp"></div>
+  <a class="out" href="/logout">Salir</a>
+</header>
+<main>
+  <div class="kpis">
+    <div class="kpi"><small>Locales activos</small><b id="kVenues">–</b></div>
+    <div class="kpi"><small>Valoraciones este mes</small><b id="kRatings">–</b></div>
+    <div class="kpi"><small>Media ★</small><b id="kAvg">–</b></div>
+    <div class="kpi"><small>Enviados a Google</small><b id="kGoogle">–</b></div>
+  </div>
+
+  <h2>Locales</h2>
+  <div class="venues" id="venues"><p class="empty">Cargando…</p></div>
+
+  <h2>Añadir un local</h2>
+  <section class="panel">
+    <form class="new" id="newForm">
+      <div><label for="nName">Nombre del local</label><input id="nName" required maxlength="80" placeholder="Ej. TGB Zurriola"></div>
+      <div><label for="nLogin">Usuario de acceso (opcional)</label><input id="nLogin" maxlength="40" placeholder="Ej. zurriola"></div>
+      <div class="full"><label for="nGoogle">Enlace de reseñas de Google (opcional)</label><input id="nGoogle" type="url" placeholder="https://g.page/r/XXXXXXXX/review">
+        <p class="note">Se puede poner después desde los ajustes del propio local. Se saca en Google Business Profile → «Pedir reseñas».</p></div>
+      <div class="full"><button class="btn">Crear local</button></div>
+    </form>
+  </section>
+  <div id="superZone" hidden>
+    <h2>Otros portales</h2>
+    <p class="sub">Para otros negocios, como el de Oskar. Cada portal gestiona sus propios locales con su usuario y contraseña. Desde aquí solo los creas, les das acceso o se lo cortas: no ves sus datos.</p>
+    <div class="accts" id="accts"></div>
+    <section class="panel" style="margin-top:14px">
+      <form class="new" id="acctForm">
+        <div><label for="aName">Nombre del portal</label><input id="aName" required maxlength="80" placeholder="Ej. Restaurantes de Oskar"></div>
+        <div><label for="aLogin">Usuario de acceso (opcional)</label><input id="aLogin" maxlength="40" placeholder="Ej. oskar"></div>
+        <div class="full"><button class="btn">Crear portal</button></div>
+      </form>
+    </section>
+  </div>
+</main>
+
+<dialog id="dlg"><div class="dlg">
+  <h3 id="dTitle">Acceso del local</h3>
+  <p class="note" id="dNote" style="margin-top:6px">Guarda esta contraseña ahora: por seguridad no se vuelve a mostrar. Si se pierde, genera otra.</p>
+  <div class="cred">
+    <span>Entrar en</span><b id="dUrl"></b>
+    <span>Usuario</span><b id="dUser"></b>
+    <span>Contraseña</span><b id="dPass"></b>
+  </div>
+  <div class="row">
+    <button class="btn ghost" id="dCopy">Copiar para enviar</button>
+    <button class="btn" id="dClose">Hecho</button>
+  </div>
+</div></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const eur = (n) => n.toLocaleString('es-ES', { style:'currency', currency:'EUR' });
+let base = location.origin, venues = [];
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg || 'Copiado'); } catch { prompt('Copia este texto:', text); }
+}
+
+async function load() {
+  const d = await fetch('/api/portal/venues').then(r => r.json());
+  base = d.base; venues = d.venues;
+  const act = venues.filter(v => v.active);
+  const ratings = act.reduce((a, v) => a + v.ratings, 0);
+  const starSum = act.reduce((a, v) => a + (v.avg || 0) * v.ratings, 0);
+  $('kVenues').textContent = act.length;
+  $('kRatings').textContent = ratings;
+  $('kAvg').textContent = ratings ? (starSum / ratings).toFixed(2) : '–';
+  $('kGoogle').textContent = act.reduce((a, v) => a + v.google_clicks, 0);
+  $('venues').innerHTML = venues.map(v => `
+    <article class="v ${v.active ? '' : 'off'}">
+      <div class="v-head"><h3>${esc(v.name)}</h3><span class="chip ${v.active ? 'on' : 'offc'}">${v.active ? 'Activo' : 'Desactivado'}</span></div>
+      <div class="login">Usuario: <code>${esc(v.login)}</code></div>
+      <div class="stats">
+        <div><b>${v.waiters}</b><small>camareros</small></div>
+        <div><b>${v.ratings}</b><small>valoraciones</small></div>
+        <div><b>${v.avg ?? '–'}</b><small>media ★</small></div>
+        <div><b>${v.google_clicks}</b><small>a Google</small></div>
+      </div>
+      ${v.has_google ? '' : '<div class="warn">Falta el enlace de reseñas de Google: ponlo en los ajustes del local.</div>'}
+      <div class="acts">
+        <a class="main" href="/admin?v=${v.id}">Abrir dashboard</a>
+        <button onclick="resetPass(${v.id})">Nueva contraseña</button>
+        <button onclick="copy('${base}/camareros?local=${encodeURIComponent(v.slug)}', 'Enlace de la web para camareros copiado')">Web camareros</button>
+        <button onclick="toggle(${v.id}, ${!v.active})">${v.active ? 'Desactivar' : 'Activar'}</button>
+      </div>
+    </article>`).join('') || '<p class="empty">Aún no hay locales.</p>';
+}
+
+function showCred(title, login, password) {
+  $('dTitle').textContent = title;
+  $('dUrl').textContent = base + '/login';
+  $('dUser').textContent = login;
+  $('dPass').textContent = password;
+  $('dCopy').onclick = () => copy(`TopReview · ${title}\nEntrar en: ${base}/login\nUsuario: ${login}\nContraseña: ${password}`, 'Acceso copiado');
+  $('dlg').showModal();
+}
+$('dClose').onclick = () => $('dlg').close();
+
+async function resetPass(id) {
+  const v = venues.find(x => x.id === id);
+  if (!confirm(`¿Generar una contraseña nueva para ${v.name}? La anterior dejará de funcionar.`)) return;
+  const r = await fetch(`/api/portal/venues/${id}/password`, { method:'POST' }).then(r => r.json());
+  showCred(v.name, r.login, r.password);
+}
+async function toggle(id, active) {
+  const v = venues.find(x => x.id === id);
+  if (!active && !confirm(`¿Desactivar ${v.name}? Sus QR y su acceso dejarán de funcionar hasta que lo actives de nuevo.`)) return;
+  await fetch(`/api/portal/venues/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
+  load();
+}
+$('newForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const body = { name: $('nName').value.trim(), login: $('nLogin').value.trim(), google_review_url: $('nGoogle').value.trim() };
+  if (!body.name) return;
+  const r = await fetch('/api/portal/venues', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.error || 'No se pudo crear');
+  e.target.reset();
+  await load();
+  showCred(d.name, d.login, d.password);
+};
+// Sesión caducada → pantalla de acceso
+const _fetch = window.fetch.bind(window);
+window.fetch = async (...a) => { const r = await _fetch(...a); if (r.status === 401) location.href = '/login?next=/portal'; return r; };
+
+let me = null, accts = [];
+async function loadMe() {
+  me = await fetch('/api/portal/me').then(r => r.json());
+  $('pName').textContent = me.name;
+  document.title = me.name + ' · TopReview';
+  $('superZone').hidden = !me.is_super;
+  if (me.is_super) loadAccts();
+}
+$('pName').onclick = async () => {
+  const name = prompt('Nombre de tu portal:', me?.name || '');
+  if (!name || !name.trim()) return;
+  await fetch('/api/portal/me', { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: name.trim() }) });
+  loadMe();
+};
+async function loadAccts() {
+  accts = await fetch('/api/portal/accounts').then(r => r.json());
+  $('accts').innerHTML = accts.map(a => `
+    <article class="v ${a.active ? '' : 'off'}">
+      <div class="v-head"><h3>${esc(a.name)}</h3><span class="chip ${a.active ? 'on' : 'offc'}">${a.active ? 'Activo' : 'Desactivado'}</span></div>
+      <div class="login">Usuario: <code>${esc(a.login)}</code> · ${a.venues} ${a.venues === 1 ? 'local' : 'locales'}</div>
+      <div class="acts">
+        <button onclick="acctPass(${a.id})">Nueva contraseña</button>
+        <button onclick="acctToggle(${a.id}, ${!a.active})">${a.active ? 'Desactivar' : 'Activar'}</button>
+      </div>
+    </article>`).join('') || '<p class="empty">Aún no hay otros portales.</p>';
+}
+async function acctPass(id) {
+  const a = accts.find(x => x.id === id);
+  if (!confirm(`¿Generar una contraseña nueva para el portal ${a.name}? La anterior dejará de funcionar.`)) return;
+  const r = await fetch(`/api/portal/accounts/${id}/password`, { method:'POST' }).then(r => r.json());
+  showCred(a.name, r.login, r.password);
+}
+async function acctToggle(id, active) {
+  const a = accts.find(x => x.id === id);
+  if (!active && !confirm(`¿Desactivar el portal ${a.name}? Ni él ni sus locales podrán entrar, y sus QR dejarán de funcionar hasta que lo actives.`)) return;
+  await fetch(`/api/portal/accounts/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
+  loadAccts();
+}
+$('acctForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const body = { name: $('aName').value.trim(), login: $('aLogin').value.trim() };
+  if (!body.name) return;
+  const r = await fetch('/api/portal/accounts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.error || 'No se pudo crear');
+  e.target.reset();
+  await loadAccts();
+  showCred('Portal ' + d.name, d.login, d.password);
+};
+loadMe();
+load();
+</script>
+</body>
+</html>

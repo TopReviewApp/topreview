@@ -1,0 +1,366 @@
+<title>TopReview para camareros</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+  /* Layout: cartelera de cine en versión luminosa. Fondo crema, tarjetas blancas, azul Klein como acento y azul navío para el texto y el cierre. El amarillo queda solo para las estrellas. */
+  :root {
+    --cream:#f7f1e3; --white:#ffffff; --card:#ffffff; --line:#e3d9c4; --line-soft:#efe7d6;
+    --navy:#0b1f3a; --ink:#0b1f3a; --muted:#4b5a73;
+    --klein:#002fa7; --klein-dark:#00227a; --klein-soft:#002fa712; --klein-tint:#e6ecfa;
+    --star:#f2b705; --star-off:#ddd5c2;
+    --good:#16824a; --bad:#c92a42;
+    --display:"Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+    --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme:light;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } *, *::before { animation:none !important; transition:none !important; } }
+  body { margin:0; background:var(--cream); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55; }
+  .wrap { max-width:1100px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+  h1, h2, h3 { font-family:var(--display); text-transform:uppercase; letter-spacing:.01em; line-height:.95; margin:0; text-wrap:balance; color:var(--navy); }
+  h2 { font-size:clamp(38px, 6vw, 60px); }
+  .eyebrow { font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--klein); font-weight:700; }
+  section { padding-block:72px; }
+  .lede { color:var(--muted); max-width:58ch; font-size:17px; margin:14px 0 0; }
+  a { color:inherit; }
+  :focus-visible { outline:2px solid var(--klein); outline-offset:3px; }
+
+  /* Navegación */
+  body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--cream); }
+  nav { position:sticky; top:env(safe-area-inset-top, 0px); z-index:5; background:color-mix(in srgb, var(--cream) 90%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  nav .wrap { display:flex; align-items:center; gap:18px; padding-block:12px; }
+  .brand { font-family:var(--display); font-weight:900; font-size:28px; text-transform:uppercase; letter-spacing:.02em; text-decoration:none; color:var(--navy); }
+  .brand span { color:var(--klein); }
+  nav .links { display:flex; gap:18px; margin-left:auto; font-size:14px; align-items:center; }
+  nav .links a { text-decoration:none; color:var(--muted); }
+  nav .links a:hover { color:var(--klein); }
+  @media (max-width:720px) { nav .links a:not(.cta-s) { display:none; } }
+  .cta-s { background:var(--klein); color:#fff !important; border-radius:99px; padding:7px 16px; font-weight:700; }
+  .cta-s:hover { background:var(--klein-dark); }
+
+  /* Portada: marquesina */
+  .hero { padding-block:56px 72px; background:radial-gradient(ellipse at 85% -10%, #002fa726 0%, transparent 55%), radial-gradient(ellipse at 0% 110%, #ffffff 0%, transparent 60%); }
+  .hero .wrap { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:40px; align-items:center; }
+  @media (max-width:860px) { .hero .wrap { grid-template-columns:minmax(0,1fr); } }
+  .marquee { position:relative; border:3px solid var(--klein); border-radius:18px; padding:30px 26px 26px; background:var(--white); box-shadow:0 24px 50px -28px #0b1f3a55; }
+  .bulbs { position:absolute; left:10px; right:10px; height:10px; display:flex; justify-content:space-between; }
+  .bulbs.top { top:-6px; } .bulbs.bot { bottom:-6px; }
+  .bulbs i { width:10px; height:10px; border-radius:50%; background:var(--star); box-shadow:0 0 8px 1px #f2b70599; animation:blink 1.4s infinite; }
+  .bulbs i:nth-child(2n) { animation-delay:.7s; }
+  @keyframes blink { 50% { opacity:.4; box-shadow:none; } }
+  .marquee .now { font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); }
+  .hero h1 { font-size:clamp(56px, 10vw, 112px); margin-top:6px; }
+  .hero h1 em { font-style:normal; color:var(--klein); }
+  .hero .lede { font-size:18px; }
+  .btns { display:flex; gap:12px; flex-wrap:wrap; margin-top:26px; }
+  .btn { display:inline-block; text-decoration:none; font-weight:700; border-radius:12px; padding:13px 20px; transition:background .15s, color .15s, border-color .15s; }
+  .btn.gold { background:var(--klein); color:#fff; }
+  .btn.gold:hover { background:var(--klein-dark); }
+  .btn.line { border:1.5px solid var(--navy); color:var(--navy); background:transparent; }
+  .btn.line:hover { background:var(--navy); color:#fff; }
+
+  /* Móvil */
+  .phone { width:100%; max-width:290px; margin:0 auto; border-radius:40px; padding:11px; background:var(--navy); box-shadow:0 30px 60px -20px #0b1f3a66, 0 0 0 6px #0b1f3a0d; }
+  .screen { border-radius:30px; padding:20px 14px; min-height:430px; display:flex; align-items:center; background:radial-gradient(circle at 25% 0%, #3d63d6 0%, var(--klein) 45%, var(--klein-dark) 100%); }
+  .pcard { background:#fff; color:var(--navy); border-radius:20px; padding:20px 12px; width:100%; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .pcard .b { font-family:var(--display); font-weight:900; font-size:20px; text-transform:uppercase; } .pcard .b span { color:var(--klein); }
+  .pcard small { color:var(--muted); font-size:12px; }
+  .av { width:56px; height:56px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:24px; background:linear-gradient(135deg,var(--klein),var(--navy)); }
+  .pcard p { margin:0; font-weight:700; font-size:18px; line-height:1.2; }
+  .pcard p em { font-style:normal; color:var(--klein); }
+  .pstars { font-size:34px; letter-spacing:2px; color:var(--star-off); }
+  .pstars b { color:var(--star); font-weight:400; animation:pop 3s infinite; display:inline-block; }
+  .pstars b:nth-child(2){animation-delay:.15s}.pstars b:nth-child(3){animation-delay:.3s}.pstars b:nth-child(4){animation-delay:.45s}.pstars b:nth-child(5){animation-delay:.6s}
+  @keyframes pop { 0%,10% { color:var(--star-off); transform:scale(1); } 20%,85% { color:var(--star); transform:scale(1.08); } 100% { color:var(--star-off); } }
+
+  /* Secciones alternas: blanco con tarjetas crema */
+  .steps, .tips, .faq { background:var(--white); --card:var(--cream); }
+
+  /* Pasos como entradas */
+  .tickets { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; margin-top:36px; }
+  @media (max-width:860px) { .tickets { grid-template-columns:minmax(0,1fr); } }
+  .ticket { position:relative; background:var(--card); border-radius:14px; padding:22px; border:1px solid var(--line);
+    -webkit-mask:radial-gradient(circle 12px at 0 50%, transparent 98%, #000) left/51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, transparent 98%, #000) right/51% 100% no-repeat;
+            mask:radial-gradient(circle 12px at 0 50%, transparent 98%, #000) left/51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, transparent 98%, #000) right/51% 100% no-repeat; }
+  .ticket .num { font-family:var(--display); font-size:15px; letter-spacing:.2em; color:var(--klein); text-transform:uppercase; border-bottom:2px dashed var(--line); padding-bottom:10px; margin-bottom:14px; display:flex; justify-content:space-between; }
+  .ticket h3 { font-size:30px; }
+  .ticket p { color:var(--muted); margin:10px 0 0; font-size:15px; }
+
+  /* Lo que ganas */
+  .earn .wrap { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; align-items:start; }
+  @media (max-width:860px) { .earn .wrap { grid-template-columns:minmax(0,1fr); } }
+  .rates { margin-top:24px; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--white); }
+  .rate { display:flex; align-items:center; justify-content:space-between; padding:13px 18px; border-bottom:1px solid var(--line-soft); font-variant-numeric:tabular-nums; }
+  .rate:last-child { border-bottom:0; }
+  .rate .s { color:var(--star); letter-spacing:2px; font-size:18px; }
+  .rate .s span { color:var(--star-off); }
+  .rate b { font-family:var(--display); font-size:26px; color:var(--navy); }
+  .rate.top { background:var(--klein-tint); }
+  .rate.top b { color:var(--klein); }
+  .calc { background:var(--white); border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:0 24px 50px -32px #0b1f3a55; }
+  .calc h3 { font-size:30px; }
+  .calc label { display:block; font-size:14px; color:var(--muted); margin-top:18px; }
+  .calc .val { float:right; color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums; }
+  .calc input[type=range] { width:100%; accent-color:var(--klein); margin-top:8px; }
+  .total { margin-top:22px; padding-top:18px; border-top:2px dashed var(--line); display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .total b { font-family:var(--display); font-size:64px; color:var(--klein); line-height:1; font-variant-numeric:tabular-nums; }
+  .fine { font-size:13px; color:var(--muted); margin:12px 0 0; }
+
+  /* Consejos */
+  .say { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; margin-top:32px; }
+  @media (max-width:860px) { .say { grid-template-columns:minmax(0,1fr); } }
+  .quote { background:var(--card); border-radius:16px; padding:20px; border:1px solid var(--line); border-left:4px solid var(--klein); }
+  .quote .when { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--klein); font-weight:700; }
+  .quote p { font-size:19px; margin:10px 0 0; line-height:1.4; color:var(--navy); }
+  .dodont { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-top:16px; }
+  @media (max-width:700px) { .dodont { grid-template-columns:minmax(0,1fr); } }
+  .list { border:1px solid var(--line); border-radius:16px; padding:20px 22px; background:var(--card); }
+  .list h3 { font-size:26px; display:flex; align-items:center; gap:10px; }
+  .list ul { margin:12px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:9px; }
+  .list li { padding-left:26px; position:relative; color:var(--muted); }
+  .list.yes li::before { content:"✓"; position:absolute; left:0; color:var(--good); font-weight:700; }
+  .list.no li::before { content:"✕"; position:absolute; left:0; color:var(--bad); font-weight:700; }
+
+  /* Tu panel */
+  .panel .wrap { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:40px; align-items:center; }
+  @media (max-width:860px) { .panel .wrap { grid-template-columns:minmax(0,1fr); } }
+  .me { background:#fff; color:var(--navy); border-radius:22px; padding:22px; max-width:360px; margin:0 auto; width:100%; text-align:center; border:1px solid var(--line); box-shadow:0 24px 50px -30px #0b1f3a66; }
+  .me .b { font-family:var(--display); font-weight:900; font-size:20px; text-transform:uppercase; } .me .b span { color:var(--klein); }
+  .me h4 { margin:8px 0 2px; font-size:20px; }
+  .me .qr { width:130px; height:130px; margin:12px auto; }
+  .me .qr img { width:100%; height:100%; display:block; image-rendering:pixelated; }
+  .me .g3 { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin-top:10px; }
+  .me .g3 div { background:var(--cream); border-radius:12px; padding:10px 4px; }
+  .me .g3 b { display:block; font-size:18px; font-variant-numeric:tabular-nums; }
+  .me .g3 small { font-size:11px; color:var(--muted); }
+  .feat { margin:20px 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:12px; }
+  .feat li { display:flex; gap:12px; align-items:flex-start; color:var(--muted); }
+  .feat li b { color:var(--ink); }
+  .feat .ic { flex:none; width:32px; height:32px; border-radius:10px; display:grid; place-items:center; background:var(--klein-tint); color:var(--klein); font-weight:700; }
+
+  /* FAQ */
+  details { border-bottom:1px solid var(--line); padding-block:16px; }
+  details:first-of-type { border-top:1px solid var(--line); margin-top:28px; }
+  summary { cursor:pointer; font-weight:700; font-size:17px; list-style:none; display:flex; justify-content:space-between; gap:12px; color:var(--navy); }
+  summary::-webkit-details-marker { display:none; }
+  summary::after { content:"+"; color:var(--klein); font-size:22px; line-height:1; transition:transform .2s; }
+  details[open] summary::after { transform:rotate(45deg); }
+  details p { color:var(--muted); margin:10px 0 0; max-width:70ch; }
+
+  /* Cierre: banda azul navío */
+  .end { text-align:center; padding-block:84px; background:radial-gradient(ellipse at 50% 120%, #002fa7 0%, transparent 65%), var(--navy); color:#fff; }
+  .end h2 { font-size:clamp(46px, 8vw, 88px); color:#fff; }
+  .end h2 em { font-style:normal; color:var(--star); }
+  .end .eyebrow { color:#9fb4ee; }
+  .end .lede { margin-inline:auto; color:#c9d3e6; }
+  .end .btns { justify-content:center; }
+  .end .btn.gold { background:#fff; color:var(--navy); }
+  .end .btn.gold:hover { background:var(--cream); }
+  footer { border-top:1px solid var(--line); padding-block:22px; font-size:13px; color:var(--muted); background:var(--cream); }
+  footer .wrap { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+</style>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top">Top<span>Review</span></a>
+    <div class="links">
+      <a href="#como">Cómo funciona</a>
+      <a href="#ganas">Lo que ganas</a>
+      <a href="#consejos">Consejos</a>
+      <a href="#faq">Preguntas</a>
+      <a class="cta-s" href="/admin">Acceso encargado</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="marquee">
+      <div class="bulbs top"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="now">Ahora en cartel · <span class="biz">tu equipo de sala</span></div>
+      <h1>Tú eres<br>la <em>estrella</em></h1>
+      <p class="lede">Tienes tu propio QR. Cuando un cliente te valora con 5 estrellas, cobras un extra. Tu buen servicio por fin se ve y se paga.</p>
+      <div class="btns">
+        <a class="btn gold" href="#como">Cómo funciona</a>
+        <a class="btn line" href="#ganas">Calcula lo que ganas</a>
+      </div>
+      <div class="bulbs bot"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="phone" aria-label="Lo que ve el cliente al escanear tu QR">
+      <div class="screen">
+        <div class="pcard">
+          <div class="b">Top<span>Review</span></div>
+          <small class="biz">Tu restaurante</small>
+          <div class="av">T</div>
+          <p>¿Qué tal te ha atendido <em>tu nombre</em>?</p>
+          <div class="pstars"><b>★</b><b>★</b><b>★</b><b>★</b><b>★</b></div>
+          <small>Lo que ve el cliente al escanear</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="steps" id="como">
+  <div class="wrap">
+    <div class="eyebrow">Cómo funciona</div>
+    <h2>Tres pasos, diez segundos</h2>
+    <p class="lede">El cliente no tiene que descargar nada ni registrarse. Escanea, toca las estrellas y listo.</p>
+    <div class="tickets">
+      <article class="ticket">
+        <div class="num"><span>Paso 1</span><span>★</span></div>
+        <h3>Recibes tu QR</h3>
+        <p>El encargado te da de alta y te entrega tu QR personal con tu nombre. Es solo tuyo: todo lo que llegue por él cuenta para ti.</p>
+      </article>
+      <article class="ticket">
+        <div class="num"><span>Paso 2</span><span>★★</span></div>
+        <h3>El cliente te valora</h3>
+        <p>Al traer la cuenta, enseñas tu QR. El cliente lo escanea con la cámara del móvil, te da de 1 a 5 estrellas y pasa a dejar una reseña en Google.</p>
+      </article>
+      <article class="ticket">
+        <div class="num"><span>Paso 3</span><span>★★★</span></div>
+        <h3>Cobras tu bonus</h3>
+        <p>Cada valoración suma a tu bonus del mes. Lo ves en tu panel en tiempo real y se paga con la nómina.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="earn" id="ganas">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Lo que ganas</div>
+      <h2>Cada estrella cuenta</h2>
+      <p class="lede">Esto es lo que suma cada valoración que recibes este mes.</p>
+      <div class="rates" id="rates"></div>
+      <p class="fine">Importes fijados por <span class="biz">el restaurante</span>. Pueden cambiar; los vigentes siempre aparecen en tu panel.</p>
+    </div>
+    <div class="calc">
+      <h3>Calcula tu mes</h3>
+      <label for="c5">Valoraciones de 5★ al mes <span class="val" id="v5"></span></label>
+      <input type="range" id="c5" min="0" max="150" value="40">
+      <label for="c4">Valoraciones de 4★ al mes <span class="val" id="v4"></span></label>
+      <input type="range" id="c4" min="0" max="80" value="10">
+      <div class="total"><span>Tu extra este mes</span><b id="tot">0 €</b></div>
+      <p class="fine">Con 2 o 3 mesas al día que te valoren con 5★ llegas a unas 60 al mes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="tips" id="consejos">
+  <div class="wrap">
+    <div class="eyebrow">Consejos</div>
+    <h2>Cuándo y cómo enseñar tu QR</h2>
+    <p class="lede">El mejor momento es cuando el cliente ya ha disfrutado: al traer la cuenta o el café. Natural, sin presión y con una sonrisa.</p>
+    <div class="say">
+      <div class="quote"><div class="when">Al traer la cuenta</div><p>«Si os ha gustado cómo os he atendido, me ayudáis mucho dejándome una valoración aquí. Son diez segundos.»</p></div>
+      <div class="quote"><div class="when">Si te dan las gracias</div><p>«¡Gracias a vosotros! Si queréis, escaneáis mi código y lo contáis en Google. Me hace mucha ilusión.»</p></div>
+      <div class="quote"><div class="when">Con clientes habituales</div><p>«Ya sabéis que ahora tengo mi propio QR. Cuando os venga bien, me echáis una mano.»</p></div>
+    </div>
+    <div class="dodont">
+      <div class="list yes">
+        <h3>Sí</h3>
+        <ul>
+          <li>Lleva el QR a mano: en la libreta, el datáfono o el portacuentas.</li>
+          <li>Pídelo a todas las mesas por igual, no solo a las que han ido bien.</li>
+          <li>Pide que te mencionen por tu nombre en la reseña de Google.</li>
+          <li>Lee los comentarios privados en tu panel: son pistas para mejorar.</li>
+        </ul>
+      </div>
+      <div class="list no">
+        <h3>No</h3>
+        <ul>
+          <li>No escanees tu propio QR ni pidas a amigos que te valoren: se detecta y no cuenta.</li>
+          <li>No ofrezcas descuentos ni invitaciones a cambio de la reseña. Google lo prohíbe y puede borrar las reseñas del local.</li>
+          <li>No insistas ni cojas el móvil del cliente.</li>
+          <li>No elijas solo a los clientes contentos para enseñarles el QR.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="wrap">
+    <div class="me" aria-label="Ejemplo de tu panel personal">
+      <div class="b">Top<span>Review</span></div>
+      <h4>Hola, Laura 👋</h4>
+      <small style="color:var(--muted)">Tu código personal</small>
+      <div class="qr" aria-hidden="true"></div>
+      <div class="g3">
+        <div><b>4,8</b><small>media ★</small></div>
+        <div><b>52</b><small>valoraciones</small></div>
+        <div><b id="meBonus">94 €</b><small>bonus del mes</small></div>
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow">Tu panel</div>
+      <h2>Tus números, en tu móvil</h2>
+      <p class="lede">Al darte de alta recibes un enlace privado. Guárdalo en la pantalla de inicio del móvil y tendrás siempre a mano:</p>
+      <ul class="feat">
+        <li><span class="ic">QR</span><span><b>Tu QR</b> para enseñarlo directamente desde la pantalla si se te olvida la tarjeta.</span></li>
+        <li><span class="ic">★</span><span><b>Tu media y tus valoraciones</b> del mes, actualizadas al momento.</span></li>
+        <li><span class="ic">€</span><span><b>Tu bonus acumulado</b>, para que sepas lo que vas a cobrar.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="eyebrow">Preguntas frecuentes</div>
+    <h2>Lo que nos preguntáis</h2>
+    <details><summary>¿El cliente tiene que descargarse algo?</summary><p>No. Abre la cámara del móvil, apunta al QR y se abre una página. Toca las estrellas y listo.</p></details>
+    <details><summary>¿Qué pasa si un cliente me pone 1, 2 o 3 estrellas?</summary><p>No se publica en ningún sitio. Se le pide un comentario privado que solo ve la dirección, para mejorar. Si quiere, también puede opinar en Google, como cualquier cliente.</p></details>
+    <details><summary>¿Cuentan las reseñas que el cliente deja en Google?</summary><p>Tu bonus se calcula con las estrellas que el cliente te da en TopReview, justo después de escanear tu QR. Google no dice qué camarero atendió a cada cliente, por eso medimos en el momento.</p></details>
+    <details><summary>¿Puede un cliente valorarme varias veces?</summary><p>Cuenta un voto por móvil cada 12 horas. Si repite, se actualiza su voto en lugar de sumar otro.</p></details>
+    <details><summary>¿Cuándo cobro el bonus?</summary><p>Se calcula a final de mes y se paga con la nómina. Pregunta al encargado los detalles de tu local.</p></details>
+    <details><summary>¿Y si pierdo mi QR?</summary><p>Lo tienes siempre en tu panel personal. El encargado también puede reimprimirte la tarjeta cuando quieras.</p></details>
+    <details><summary>¿Qué hago si cambio de restaurante o me voy?</summary><p>El encargado desactiva tu QR. Tus valoraciones quedan guardadas para el cálculo del último mes.</p></details>
+  </div>
+</section>
+
+<section class="end">
+  <div class="wrap">
+    <h2>Tu servicio,<br>en <em>cartel</em></h2>
+    <p class="lede">Pide al encargado tu QR personal y el enlace a tu panel. Esta misma noche puedes empezar a sumar.</p>
+    <div class="btns"><a class="btn gold" href="#como">Repasar cómo funciona</a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>TopReview · <span class="biz">tu restaurante</span></span><span>Valoraciones de sala · Reseñas en Google</span></div>
+</footer>
+
+<script>
+  // Importes por defecto; en la app publicada se leen de los Ajustes del dashboard
+  let bonus = { 5:2, 4:1, 3:0, 2:0, 1:0 };
+  const eur = (n) => n.toLocaleString('es-ES', { style:'currency', currency:'EUR', maximumFractionDigits: n % 1 ? 2 : 0 });
+  const $ = (id) => document.getElementById(id);
+
+  function renderRates() {
+    $('rates').innerHTML = [5,4,3,2,1].map(k => `<div class="rate ${k===5?'top':''}">
+      <span class="s" aria-label="${k} estrellas">${'★'.repeat(k)}<span>${'★'.repeat(5-k)}</span></span>
+      <b>${bonus[k] > 0 ? '+' : ''}${eur(bonus[k])}</b></div>`).join('');
+  }
+  function calc() {
+    const a = +$('c5').value, b = +$('c4').value;
+    $('v5').textContent = a; $('v4').textContent = b;
+    $('tot').textContent = eur(a * bonus[5] + b * bonus[4]);
+  }
+  $('c5').oninput = calc; $('c4').oninput = calc;
+  try { const q = qrcode(0, 'M'); q.addData(location.origin + '/r/laura'); q.make(); document.querySelector('.me .qr').innerHTML = q.createImgTag(4, 0); } catch {}
+  renderRates(); calc();
+  $('meBonus').textContent = eur(44 * bonus[5] + 8 * bonus[4]);
+
+  fetch('/api/public/info' + location.search).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) return;
+    bonus = { 5:+d.bonus_5||0, 4:+d.bonus_4||0, 3:+d.bonus_3||0, 2:+d.bonus_2||0, 1:+d.bonus_1||0 };
+    document.querySelectorAll('.biz').forEach(el => el.textContent = d.business_name);
+    renderRates(); calc();
+    $('meBonus').textContent = eur(44 * bonus[5] + 8 * bonus[4]);
+  }).catch(() => {});
+</script>

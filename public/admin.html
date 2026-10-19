@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TopReview · Dashboard</title>
+<style>
+  :root { --bg:#f7f1e3; --panel:#fff; --ink:#0b1f3a; --muted:#4b5a73; --line:#e3d9c4; --brand:#002fa7; --gold:#f2b705; --good:#16824a; --bad:#c92a42; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:#0b1f3a; color:#fff; padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .brand { font-weight:900; font-size:22px; } .brand span { color:#9fb4ee; }
+  .venue { font-weight:700; font-size:15px; color:#fff; padding-left:12px; border-left:1px solid #2c4166; }
+  .back { color:#c9d3e6; font-size:13px; text-decoration:none; border:1px solid #2c4166; border-radius:8px; padding:5px 10px; }
+  .back:hover { color:#fff; border-color:#9fb4ee; }
+  .live { font-size:12px; display:flex; align-items:center; gap:6px; color:#a7f3d0; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 #22c55e; animation:pulse 1.6s infinite; }
+  .dot.off { background:#ef4444; animation:none; }
+  @keyframes pulse { 70% { box-shadow:0 0 0 8px transparent; } }
+  header .sp { flex:1; }
+  select, input, button { font:inherit; }
+  header select { background:#132a4d; color:#fff; border:1px solid #2c4166; border-radius:8px; padding:6px 10px; }
+  main { max-width:1200px; margin:0 auto; padding:20px 16px 60px; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:18px; }
+  .kpi { background:var(--panel); border-radius:14px; padding:14px 16px; border:1px solid var(--line); }
+  .kpi small { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .kpi b { display:block; font-size:28px; margin-top:4px; }
+  .grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; overflow:hidden; }
+  .panel h2 { font-size:16px; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .panel h2 .sp { flex:1; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-size:12px; color:var(--muted); font-weight:600; padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:10px 6px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr.inactive td { opacity:.45; }
+  .scroll { overflow-x:auto; }
+  .rank { font-weight:800; color:var(--muted); width:28px; }
+  .name { font-weight:700; }
+  .bar { display:flex; height:10px; border-radius:6px; overflow:hidden; background:#f1f5f9; min-width:120px; }
+  .bar i { display:block; height:100%; }
+  .s5{background:#16a34a}.s4{background:#84cc16}.s3{background:#facc15}.s2{background:#fb923c}.s1{background:#ef4444}
+  .legend { font-size:11px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+  .avg { font-weight:800; } .avg.good { color:var(--good); } .avg.bad { color:var(--bad); }
+  .money { font-weight:800; color:var(--brand); white-space:nowrap; }
+  .actions a, .actions button { font-size:12px; border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 8px; color:var(--ink); text-decoration:none; cursor:pointer; white-space:nowrap; }
+  .actions { display:flex; gap:4px; flex-wrap:wrap; }
+  .feed { list-style:none; margin:0; padding:0; max-height:520px; overflow:auto; }
+  .feed li { padding:10px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .feed .t { color:var(--muted); font-size:12px; }
+  .feed .st { color:var(--gold); letter-spacing:1px; }
+  .feed .cm { background:#fef2f2; border-radius:8px; padding:6px 8px; margin-top:4px; font-size:13px; }
+  .feed li.new { animation:flash 2s; }
+  @keyframes flash { from { background:#fef9c3; } to { background:transparent; } }
+  form.row { display:flex; gap:8px; flex-wrap:wrap; }
+  form.row input { flex:1; min-width:160px; }
+  input[type=text], input[type=url], input[type=number] { border:1px solid #cbd5e1; border-radius:10px; padding:9px 12px; width:100%; }
+  .btn { background:var(--brand); color:#fff; border:0; border-radius:10px; padding:9px 16px; font-weight:700; cursor:pointer; }
+  .btn.light { background:#e6ecfa; color:var(--brand); }
+  .settings { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .settings label { font-size:13px; color:var(--muted); display:block; }
+  .settings .full { grid-column:1/-1; }
+  .bonus { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  @media (max-width:600px) { .settings { grid-template-columns:1fr; } .bonus { grid-template-columns:repeat(3,1fr); } }
+  .note { font-size:12px; color:var(--muted); margin:6px 0 0; }
+  .warn { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:10px 12px; border-radius:10px; font-size:14px; margin-bottom:16px; }
+  .chart { display:flex; align-items:flex-end; gap:3px; height:90px; margin-top:6px; }
+  .chart div { flex:1; max-width:40px; background:#b8c7f0; border-radius:4px 4px 0 0; min-height:2px; position:relative; }
+  .chart div:hover { background:var(--brand); }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#0b1f3a; color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Top<span>Review</span></div>
+  <div class="venue" id="venueName"></div>
+  <a class="back" id="back" href="/portal" hidden>← Mis locales</a>
+  <div class="live"><span class="dot" id="dot"></span><span id="liveTxt">En directo</span></div>
+  <div class="sp"></div>
+  <select id="period">
+    <option value="today">Hoy</option>
+    <option value="week">Esta semana</option>
+    <option value="month" selected>Este mes</option>
+    <option value="all">Todo</option>
+  </select>
+  <a id="csv" class="btn light" style="text-decoration:none">Exportar CSV</a>
+  <a class="back" href="/logout">Salir</a>
+</header>
+<main>
+  <div class="warn" id="warnGoogle" hidden>⚠️ Falta el enlace de reseñas de Google. Configúralo abajo en <b>Ajustes</b> para que los clientes lleguen a tu ficha.</div>
+
+  <div class="kpis">
+    <div class="kpi"><small>Escaneos</small><b id="kScans">0</b></div>
+    <div class="kpi"><small>Valoraciones</small><b id="kRatings">0</b></div>
+    <div class="kpi"><small>Media ★</small><b id="kAvg">–</b></div>
+    <div class="kpi"><small>Enviados a Google</small><b id="kGoogle">0</b></div>
+    <div class="kpi"><small>Bonus total</small><b id="kBonus">0 €</b></div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>🏆 Ranking de camareros <span class="sp"></span></h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>#</th><th>Camarero</th><th>Escaneos</th><th>Valoraciones</th><th>Reparto ★</th><th>Media</th><th>Google</th><th>Bonus</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="legend"><span><i class="s5"></i>5★</span><span><i class="s4"></i>4★</span><span><i class="s3"></i>3★</span><span><i class="s2"></i>2★</span><span><i class="s1"></i>1★</span></div>
+      <h2 style="margin-top:22px">➕ Dar de alta camarero</h2>
+      <form class="row" id="addForm">
+        <input type="text" id="newName" placeholder="Nombre (ej. Laura)" required maxlength="60">
+        <button class="btn">Crear perfil y QR</button>
+      </form>
+      <p class="note">Se genera su QR personal, una tarjeta para imprimir y un enlace privado para que vea sus propias estadísticas.</p>
+      <h2 style="margin-top:22px">📈 Valoraciones por día</h2>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section class="panel">
+      <h2>⚡ Actividad en directo</h2>
+      <ul class="feed" id="feed"></ul>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:16px">
+    <h2>⚙️ Ajustes</h2>
+    <form id="settingsForm" class="settings">
+      <div><label>Nombre del negocio</label><input type="text" name="business_name"></div>
+      <div><label>Redirigir a Google a partir de</label>
+        <input type="number" name="redirect_min_stars" min="1" max="5"></div>
+      <div class="full"><label>Enlace de reseñas de Google Business</label>
+        <input type="url" name="google_review_url" placeholder="https://g.page/r/XXXXXXXX/review">
+        <p class="note">En Google Business Profile → «Pedir reseñas» → copia el enlace. También vale <code>https://search.google.com/local/writereview?placeid=TU_PLACE_ID</code></p></div>
+      <div class="full"><label>Bonus por valoración (€)</label>
+        <div class="bonus">
+          <input type="number" step="0.01" name="bonus_5" title="5★" placeholder="5★">
+          <input type="number" step="0.01" name="bonus_4" title="4★" placeholder="4★">
+          <input type="number" step="0.01" name="bonus_3" title="3★" placeholder="3★">
+          <input type="number" step="0.01" name="bonus_2" title="2★" placeholder="2★">
+          <input type="number" step="0.01" name="bonus_1" title="1★" placeholder="1★">
+        </div>
+        <p class="note">De izquierda a derecha: 5★, 4★, 3★, 2★, 1★. Puedes poner negativos para penalizar.</p></div>
+      <div class="full"><button class="btn">Guardar ajustes</button></div>
+    </form>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const eur = (n) => n.toLocaleString('es-ES', { style:'currency', currency:'EUR' });
+let base = location.origin, seen = new Set(), first = true;
+const V = new URLSearchParams(location.search).get('v');
+// Con el acceso maestro, cada llamada lleva el local que se está viendo (?v=)
+// Si la sesión caduca, vuelve a la pantalla de acceso
+const _fetch = window.fetch.bind(window);
+window.fetch = async (...a) => { const r = await _fetch(...a); if (r.status === 401) location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return r; };
+const api = (p) => V ? p + (p.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(V) : p;
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+async function load() {
+  const period = $('period').value;
+  $('csv').href = api('/api/admin/export.csv?period=' + period);
+  const d = await fetch(api('/api/admin/stats?period=' + period)).then(r => r.json());
+  $('venueName').textContent = d.venue?.name || '';
+  document.title = (d.venue?.name ? d.venue.name + ' · ' : '') + 'TopReview';
+  $('back').hidden = !d.fromPortal;
+  base = d.base;
+  render(d);
+  if (first) fillSettings(d.settings);
+  first = false;
+}
+
+function render(d) {
+  const w = d.waiters;
+  const sum = (k) => w.reduce((a, x) => a + x[k], 0);
+  const ratings = sum('ratings');
+  const totalStars = w.reduce((a, x) => a + [1,2,3,4,5].reduce((b, n) => b + n * x.stars[n], 0), 0);
+  $('kScans').textContent = sum('scans');
+  $('kRatings').textContent = ratings;
+  $('kAvg').textContent = ratings ? (totalStars / ratings).toFixed(2) : '–';
+  $('kGoogle').textContent = sum('google_clicks');
+  $('kBonus').textContent = eur(sum('bonus'));
+  $('warnGoogle').hidden = !!d.settings.google_review_url;
+
+  const ranked = [...w].sort((a, b) => (b.active - a.active) || (b.bonus - a.bonus) || ((b.avg||0) - (a.avg||0)) || (b.ratings - a.ratings));
+  $('rows').innerHTML = ranked.map((x, i) => {
+    const bar = x.ratings ? [5,4,3,2,1].map(n => x.stars[n] ? `<i class="s${n}" style="width:${x.stars[n]/x.ratings*100}%" title="${n}★: ${x.stars[n]}"></i>` : '').join('') : '';
+    const medal = x.active ? (['🥇','🥈','🥉'][i] || i + 1) : '–';
+    return `<tr class="${x.active ? '' : 'inactive'}">
+      <td class="rank">${medal}</td>
+      <td class="name">${esc(x.name)}</td>
+      <td>${x.scans}</td>
+      <td>${x.ratings}</td>
+      <td><div class="bar">${bar}</div><div class="note">${x.stars[5]}·${x.stars[4]}·${x.stars[3]}·${x.stars[2]}·${x.stars[1]}</div></td>
+      <td class="avg ${x.avg >= 4.5 ? 'good' : x.avg && x.avg < 3.5 ? 'bad' : ''}">${x.avg ?? '–'}</td>
+      <td>${x.google_clicks}</td>
+      <td class="money">${eur(x.bonus)}</td>
+      <td class="actions">
+        <a href="${api('/admin/card/' + x.id)}" target="_blank">🖨️ QR</a>
+        <button onclick="copy('${base}/me/${x.token}')">🔗 Su panel</button>
+        <button onclick="toggle(${x.id}, ${!x.active})">${x.active ? 'Desactivar' : 'Activar'}</button>
+      </td></tr>`;
+  }).join('') || '<tr><td colspan="9" class="note">Aún no hay camareros. Da de alta el primero abajo 👇</td></tr>';
+
+  $('feed').innerHTML = d.feed.map(e => {
+    const isNew = !first && !seen.has(e.id); seen.add(e.id);
+    const when = new Date(e.created_at.replace(' ', 'T') + 'Z').toLocaleString('es-ES', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const body = e.type === 'rating'
+      ? `<b>${esc(e.waiter)}</b> recibió <span class="st">${'★'.repeat(e.stars)}</span>${e.comment ? `<div class="cm">💬 ${esc(e.comment)}</div>` : ''}`
+      : `Cliente de <b>${esc(e.waiter)}</b> fue a Google ↗`;
+    return `<li class="${isNew ? 'new' : ''}">${body}<div class="t">${when}</div></li>`;
+  }).join('') || '<li class="note">Sin actividad todavía.</li>';
+
+  const max = Math.max(1, ...d.daily.map(x => x.n));
+  $('chart').innerHTML = d.daily.map(x => `<div style="height:${x.n/max*100}%" title="${x.day}: ${x.n} valoraciones · media ${(+x.avg).toFixed(2)}"></div>`).join('') || '<p class="note">Sin datos en este periodo.</p>';
+}
+
+function fillSettings(s) { for (const [k, v] of Object.entries(s)) { const el = document.querySelector(`[name=${k}]`); if (el) el.value = v; } }
+
+async function copy(url) {
+  try { await navigator.clipboard.writeText(url); toast('Enlace copiado: envíaselo al camarero'); }
+  catch { prompt('Copia este enlace:', url); }
+}
+async function toggle(id, active) {
+  await fetch(api('/api/admin/waiters/' + id), { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
+}
+
+$('addForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const name = $('newName').value.trim(); if (!name) return;
+  const r = await fetch(api('/api/admin/waiters'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name }) }).then(r => r.json());
+  $('newName').value = '';
+  toast(`${r.name} dado de alta ✅`);
+  window.open(api('/admin/card/' + r.id), '_blank');
+};
+$('settingsForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target));
+  await fetch(api('/api/admin/settings'), { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  toast('Ajustes guardados');
+};
+$('period').onchange = load;
+
+// Tiempo real
+let timer;
+function connect() {
+  const es = new EventSource(api('/api/admin/stream'));
+  es.onopen = () => { $('dot').classList.remove('off'); $('liveTxt').textContent = 'En directo'; };
+  es.onerror = () => { $('dot').classList.add('off'); $('liveTxt').textContent = 'Reconectando…'; };
+  es.onmessage = (m) => {
+    const ev = JSON.parse(m.data);
+    if (ev.type === 'rating') toast(`⭐ ${ev.waiter}: ${ev.stars} estrellas`);
+    clearTimeout(timer); timer = setTimeout(load, 250);
+  };
+}
+load(); connect();
+</script>
+</body>
+</html>

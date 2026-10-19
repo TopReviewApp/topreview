@@ -1,0 +1,30 @@
+:root { --bg:#0f172a; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --gold:#f5b301; --brand:#6d28d9; }
+* { box-sizing: border-box; }
+body { margin:0; min-height:100vh; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink);
+  background: radial-gradient(circle at 20% 0%, #4c1d95 0%, var(--bg) 60%); display:flex; align-items:center; justify-content:center; padding:16px; }
+.card { background:var(--card); border-radius:24px; padding:28px 22px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+.center { text-align:center; }
+.brand { font-weight:900; font-size:22px; letter-spacing:-.5px; }
+.brand span { color:var(--gold); }
+h1 { font-size:24px; line-height:1.25; margin:12px 0 18px; }
+.hl { color:var(--brand); }
+.muted { color:var(--muted); }
+.small { font-size:13px; }
+.avatar { width:72px; height:72px; border-radius:50%; margin:16px auto 0; display:grid; place-items:center;
+  font-size:32px; font-weight:800; color:#fff; background:linear-gradient(135deg,var(--brand),#db2777); }
+.stars { display:flex; justify-content:center; gap:6px; }
+.stars button { font-size:46px; line-height:1; background:none; border:0; color:#e2e8f0; cursor:pointer; padding:2px; transition:transform .1s, color .1s; }
+.stars button.on { color:var(--gold); transform:scale(1.08); }
+.stars.static { color:var(--gold); font-size:34px; letter-spacing:4px; }
+.btn { display:block; width:100%; margin:14px 0 6px; padding:15px; border:0; border-radius:14px; font-size:16px; font-weight:700;
+  background:var(--brand); color:#fff; text-decoration:none; cursor:pointer; }
+.btn.google { background:#1a73e8; }
+.btn.ghost { background:#f1f5f9; color:#1a73e8; }
+textarea { width:100%; border:1px solid #cbd5e1; border-radius:12px; padding:12px; font:inherit; resize:vertical; }
+.big { font-size:56px; margin-top:10px; }
+.qr { width:100%; max-width:280px; border-radius:12px; margin:8px auto; display:block; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0 8px; }
+.grid3 div { background:#f8fafc; border-radius:12px; padding:10px 4px; }
+.grid3 b { display:block; font-size:18px; }
+.grid3 small { color:var(--muted); font-size:12px; }
+@media print { body { background:#fff; } .card { box-shadow:none; } .noprint { display:none; } }
