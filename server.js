@@ -582,7 +582,7 @@ app.get('/logout', (req, res) => {
 app.use('/api/portal', requireAccount);
 
 // ---- Panel con menú lateral (dueños y encargados) ----
-require('./app-api')(app, { db, whoIs, getSettings, setSettings, computeStats, baseUrl, clients, slugify, crypto, needLogin, DEFAULT_SETTINGS, broadcast });
+require('./app-api')(app, { db, whoIs, getSettings, setSettings, computeStats, baseUrl, clients, slugify, crypto, needLogin, DEFAULT_SETTINGS, broadcast, DATA_DIR });
 
 app.get('/api/portal/me', (req, res) => {
   const a = db.prepare('SELECT id, name, login, is_super FROM accounts WHERE id = ?').get(req.who.accountId);

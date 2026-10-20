@@ -11,6 +11,27 @@ module.exports = function mountPanelApi(app, ctx) {
     id INTEGER PRIMARY KEY AUTOINCREMENT, venue_id INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')),
     period TEXT, result TEXT)`);
 
+  // ---------- Logos de los locales (se guardan en el volumen de datos) ----------
+  const fs = require('fs'), path = require('path');
+  const LOGO_DIR = path.resolve(ctx.DATA_DIR, 'logos');
+  fs.mkdirSync(LOGO_DIR, { recursive: true });
+  const LOGO_TYPES = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+  function sniff(buf) {
+    if (buf.length > 8 && buf[0] === 0x89 && buf.toString('ascii', 1, 4) === 'PNG') return 'png';
+    if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
+    if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'webp';
+    return null;
+  }
+  function setKey(venueId, k, v) {
+    if (v == null) db.prepare('DELETE FROM venue_settings WHERE venue_id = ? AND key = ?').run(venueId, k);
+    else db.prepare('INSERT INTO venue_settings (venue_id, key, value) VALUES (?, ?, ?) ON CONFLICT(venue_id, key) DO UPDATE SET value = excluded.value').run(venueId, k, String(v));
+  }
+  function logoUrl(venue) {
+    const s = getSettings(venue.id);
+    return s.logo_file ? `/logo/${encodeURIComponent(venue.slug)}?v=${s.logo_ver || 1}` : null;
+  }
+  const removeLogoFiles = (id) => { for (const ext of Object.keys(LOGO_TYPES)) { const f = path.join(LOGO_DIR, `${id}.${ext}`); if (fs.existsSync(f)) fs.unlinkSync(f); } };
+
   const AI_MONTHLY_LIMIT = Number(process.env.AI_MONTHLY_LIMIT || 30);
   const AI_MODEL = process.env.AI_MODEL || 'claude-sonnet-4-5';
 
@@ -117,7 +138,7 @@ module.exports = function mountPanelApi(app, ctx) {
       const a = db.prepare('SELECT name, is_super FROM accounts WHERE id = ?').get(who.accountId);
       name = a.name; isSuper = !!a.is_super;
     } else name = req.venues[0]?.name || '';
-    res.json({ kind: who.kind, name, is_super: isSuper, venues: req.venues.map((v) => ({ ...v, active: !!v.active })),
+    res.json({ kind: who.kind, name, is_super: isSuper, venues: req.venues.map((v) => ({ ...v, active: !!v.active, logo: logoUrl(v) })),
       base: baseUrl(req), ai_enabled: !!process.env.ANTHROPIC_API_KEY });
   });
 
@@ -129,7 +150,7 @@ module.exports = function mountPanelApi(app, ctx) {
       const prev = venueTotals(v.id, p.prevFrom, p.prevTo);
       const s = getSettings(v.id);
       delete cur.ranking; delete prev.ranking;
-      return { id: v.id, name: v.name, slug: v.slug, cur, prev: { ratings: prev.ratings, avg: prev.avg }, ...goalsOf(s), has_google: !!s.google_review_url };
+      return { id: v.id, name: v.name, slug: v.slug, logo: logoUrl(v), cur, prev: { ratings: prev.ratings, avg: prev.avg }, ...goalsOf(s), has_google: !!s.google_review_url };
     });
     res.json({ period: p, cards });
   });
@@ -144,7 +165,7 @@ module.exports = function mountPanelApi(app, ctx) {
     const prev = venueTotals(id, p.prevFrom, p.prevTo);
     const all = venueTotals(id, '2000-01-01 00:00:00', pad(new Date(Date.now() + 60000)));
     const s = getSettings(id);
-    res.json({ venue: { ...v, active: !!v.active }, period: p, cur, prev: { ratings: prev.ratings, avg: prev.avg, google_clicks: prev.google_clicks },
+    res.json({ venue: { ...v, active: !!v.active, logo: logoUrl(v) }, period: p, cur, prev: { ratings: prev.ratings, avg: prev.avg, google_clicks: prev.google_clicks },
       global: { ratings: all.ratings, avg: all.avg }, ...goalsOf(s), monthly: monthlySeries([id]), settings: s });
   });
 
@@ -339,6 +360,38 @@ ${lines}`;
     setSettings(id, body);
     ctx.broadcast({ type: 'refresh' }, id);
     res.json(getSettings(id));
+  });
+
+  // Logo del local: subir (PNG, JPG o WEBP, máx. 3 MB), borrar y servir
+  const express = require('express');
+  app.post('/api/panel/venue/:id/logo', express.raw({ type: () => true, limit: '3mb' }), (req, res) => {
+    const id = Number(req.params.id);
+    if (!canVenue(req, id)) return res.sendStatus(404);
+    const buf = Buffer.isBuffer(req.body) ? req.body : null;
+    const ext = buf && sniff(buf);
+    if (!ext) return res.status(400).json({ error: 'El logo tiene que ser una imagen PNG, JPG o WEBP.' });
+    removeLogoFiles(id);
+    fs.writeFileSync(path.join(LOGO_DIR, `${id}.${ext}`), buf);
+    setKey(id, 'logo_file', `${id}.${ext}`);
+    setKey(id, 'logo_ver', Date.now());
+    const v = req.venues.find((x) => x.id === id);
+    res.json({ logo: logoUrl(v) });
+  });
+  app.delete('/api/panel/venue/:id/logo', (req, res) => {
+    const id = Number(req.params.id);
+    if (!canVenue(req, id)) return res.sendStatus(404);
+    removeLogoFiles(id);
+    setKey(id, 'logo_file', null);
+    setKey(id, 'logo_ver', null);
+    res.json({ ok: true });
+  });
+  app.get('/logo/:slug', (req, res) => {
+    const v = db.prepare('SELECT id FROM venues WHERE slug = ?').get(req.params.slug);
+    const file = v && getSettings(v.id).logo_file;
+    const full = file && path.join(LOGO_DIR, path.basename(file));
+    if (!full || !fs.existsSync(full)) return res.sendStatus(404);
+    res.set({ 'Content-Type': LOGO_TYPES[path.extname(full).slice(1)], 'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff' });
+    res.sendFile(full);
   });
 
   // Tiempo real para todos los locales permitidos
