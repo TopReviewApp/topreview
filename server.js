@@ -83,6 +83,7 @@ const DEFAULT_SETTINGS = {
   google_review_url: '',
   bonus_5: '2', bonus_4: '1', bonus_3: '0', bonus_2: '0', bonus_1: '0',
   redirect_min_stars: '4',
+  goal_avg: '', goal_ratings: '',
 };
 
 const hashPass = (pw) => { const salt = crypto.randomBytes(16).toString('hex'); return salt + ':' + crypto.scryptSync(pw, salt, 32).toString('hex'); };
@@ -152,7 +153,7 @@ db.prepare('UPDATE waiters SET venue_id = (SELECT MIN(id) FROM venues) WHERE ven
 const clients = new Set(); // { res, venueId }
 function broadcast(event, venueId) {
   const msg = `data: ${JSON.stringify(event)}\n\n`;
-  for (const c of clients) if (c.venueId === venueId) c.res.write(msg);
+  for (const c of clients) if (c.venueId === venueId || c.venueIds?.has(venueId)) c.res.write(msg);
 }
 
 // ---------- Utilidades ----------
@@ -225,7 +226,7 @@ function setSessionCookie(req, res, token) {
   const secure = req.secure ? '; Secure' : '';
   res.setHeader('Set-Cookie', `${COOKIE}=${token}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly; SameSite=Lax${secure}`);
 }
-const homeFor = (who) => (who.kind === 'account' ? '/portal' : '/admin');
+const homeFor = () => '/panel';
 
 // Freno a intentos repetidos: 10 fallos por IP cada 15 minutos
 const failures = new Map();
@@ -416,8 +417,9 @@ app.get('/qr/:slug.png', async (req, res) => {
 });
 
 // ---- Admin ----
+// El panel nuevo sustituye al dashboard y al portal antiguos
+app.get(['/admin', '/portal', '/master'], (req, res) => res.redirect('/panel'));
 app.use(['/admin', '/api/admin'], requireVenue);
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 app.get('/admin/card/:id', (req, res) => {
   const w = db.prepare('SELECT * FROM waiters WHERE id = ? AND venue_id = ?').get(Number(req.params.id), req.venueId);
@@ -568,18 +570,19 @@ app.post('/login', (req, res) => {
   setSessionCookie(req, res, token);
   req.headers.cookie = `${COOKIE}=${token}`;
   const who = whoIs(req);
-  const safeNext = /^\/(admin|portal)(\/|\?|$)/.test(next) ? next : homeFor(who);
+  const safeNext = /^\/(admin|portal|panel)(\/|\?|#|$)/.test(next) ? next : homeFor(who);
   res.redirect(safeNext);
 });
 app.get('/logout', (req, res) => {
   res.setHeader('Set-Cookie', `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`);
   res.redirect('/login');
 });
-app.get('/master', (req, res) => res.redirect('/portal'));
 
 // ---- Portal: los locales de cada dueño ----
-app.use(['/portal', '/api/portal'], requireAccount);
-app.get('/portal', (req, res) => res.sendFile(path.join(__dirname, 'public', 'portal.html')));
+app.use('/api/portal', requireAccount);
+
+// ---- Panel con menú lateral (dueños y encargados) ----
+require('./app-api')(app, { db, whoIs, getSettings, setSettings, computeStats, baseUrl, clients, slugify, crypto, needLogin, DEFAULT_SETTINGS, broadcast });
 
 app.get('/api/portal/me', (req, res) => {
   const a = db.prepare('SELECT id, name, login, is_super FROM accounts WHERE id = ?').get(req.who.accountId);

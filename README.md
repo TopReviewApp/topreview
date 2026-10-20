@@ -5,8 +5,7 @@ QR por camarero → valoración en 10 segundos → reseña en Google, con panel 
 - **Portada para dueños:** `/`
 - **Página para camareros:** `/camareros?local=<slug-del-local>`
 - **Acceso (dueños y encargados):** `/login`
-- **Portal del dueño:** `/portal` — sus locales, altas, contraseñas y, en el portal principal, otros portales
-- **Dashboard de un local:** `/admin`
+- **Panel (dueños y encargados):** `/panel` — menú lateral con Inicio, Locales, Camareros, Valoraciones (con Análisis IA), Objetivos y bonus, y Configuración
 - **Página del cliente al escanear:** `/r/<camarero>`
 - **Panel privado del camarero:** `/me/<token>`
 
@@ -31,6 +30,9 @@ ADMIN_PASSWORD=una-clave npm start
 | `DATA_DIR` | Carpeta de la base de datos (en Railway, el volumen montado en `/data`) |
 | `BASE_URL` | Dirección pública que va dentro de los QR |
 | `PORT` | Puerto (Railway lo fija solo) |
+| `ANTHROPIC_API_KEY` | Opcional. Activa el análisis con IA en Valoraciones |
+| `AI_MODEL` | Opcional. Modelo de IA (por defecto `claude-sonnet-4-5`) |
+| `AI_MONTHLY_LIMIT` | Opcional. Análisis con IA por local y mes (por defecto 30) |
 
 ## Despliegue en Railway
 
