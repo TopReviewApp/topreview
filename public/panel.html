@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel · TopReview</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23002fa7'/%3E%3Cpath d='M32 12l6 13 14 1.5-10.5 9.5 3 14L32 43l-12.5 7 3-14L12 26.5 26 25z' fill='%23f2b705'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+  /* Panel: barra superior navío, menú lateral blanco con secciones, contenido sobre crema en tarjetas blancas. Azul Klein para acciones y datos; amarillo solo para estrellas. */
+  :root { --bg:#f7f1e3; --panel:#fff; --ink:#0b1f3a; --muted:#4b5a73; --line:#e3d9c4; --line2:#efe7d6; --klein:#002fa7; --klein-dark:#00227a; --tint:#e6ecfa; --star:#f2b705; --star-off:#ddd5c2; --good:#16824a; --bad:#c92a42; --warn-bg:#fff7e6; --warn:#8a5a00;
+    --display:"Big Shoulders Display", Impact, "Arial Narrow", sans-serif; --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--body); background:var(--bg); color:var(--ink); font-size:15px; line-height:1.45; }
+  a { color:var(--klein); }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--klein); outline-offset:2px; }
+
+  /* Estructura */
+  .top { position:sticky; top:0; z-index:20; height:58px; background:var(--ink); color:#fff; display:flex; align-items:center; gap:14px; padding:0 18px; }
+  .brand { font-family:var(--display); font-weight:900; font-size:26px; text-transform:uppercase; letter-spacing:.02em; text-decoration:none; color:#fff; }
+  .brand span { color:#9fb4ee; }
+  .top .who { margin-left:auto; text-align:right; line-height:1.2; }
+  .top .who b { display:block; font-size:14px; }
+  .top .who small { color:#c9d3e6; font-size:12px; }
+  .top .out { color:#c9d3e6; text-decoration:none; font-size:13px; border:1px solid #2c4166; border-radius:8px; padding:6px 10px; }
+  .top .out:hover { color:#fff; border-color:#9fb4ee; }
+  .burger { display:none; background:none; border:1px solid #2c4166; color:#fff; border-radius:8px; width:38px; height:36px; cursor:pointer; }
+  .live { display:flex; align-items:center; gap:6px; font-size:12px; color:#9fe3bd; }
+  .dot { width:8px; height:8px; border-radius:50%; background:#3ccf7f; }
+  .dot.off { background:#e5707f; }
+  .shell { display:grid; grid-template-columns:232px minmax(0,1fr); min-height:calc(100vh - 58px); }
+  nav.side { background:var(--panel); border-right:1px solid var(--line); padding:16px 12px; display:flex; flex-direction:column; gap:6px; position:sticky; top:58px; height:calc(100vh - 58px); overflow:auto; }
+  nav.side a { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; text-decoration:none; color:var(--ink); font-weight:500; border:1px solid transparent; }
+  nav.side a svg { flex:none; width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  nav.side a:hover { background:var(--bg); }
+  nav.side a.on { background:var(--klein); color:#fff; }
+  nav.side .sub { display:flex; flex-direction:column; gap:2px; margin:-2px 0 4px 42px; }
+  nav.side .sub a { padding:4px 8px; font-size:13px; color:var(--muted); border-radius:8px; font-weight:500; }
+  nav.side .sub a.on { background:var(--tint); color:var(--klein); }
+  nav.side .foot { margin-top:auto; font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding:12px 4px 0; }
+  main { padding:24px 24px 60px; max-width:1240px; width:100%; }
+  @media (max-width:860px) {
+    .shell { grid-template-columns:minmax(0,1fr); }
+    .burger { display:inline-grid; place-items:center; }
+    nav.side { position:fixed; top:58px; left:0; bottom:0; width:260px; z-index:15; transform:translateX(-102%); transition:transform .2s; box-shadow:0 20px 50px #0b1f3a40; }
+    body.menu nav.side { transform:none; }
+    .top .who { display:none; }
+    #liveTxt { display:none; }
+    main { padding:18px 16px 60px; }
+  }
+
+  /* Piezas */
+  h1 { font-family:var(--display); font-weight:900; font-size:clamp(30px,4vw,40px); text-transform:uppercase; letter-spacing:.01em; margin:0 0 14px; line-height:1; }
+  h2 { font-size:17px; margin:0 0 12px; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 18px; }
+  .chip { border:1px solid var(--line); background:var(--panel); border-radius:99px; padding:6px 12px; cursor:pointer; font-size:13px; white-space:nowrap; }
+  .chip.on { background:var(--klein); border-color:var(--klein); color:#fff; }
+  .chip .n { opacity:.7; margin-left:4px; }
+  .field { display:flex; flex-direction:column; gap:3px; }
+  .field label { font-size:12px; color:var(--muted); }
+  select, input[type=text], input[type=url], input[type=number], input[type=date], textarea { border:1px solid #cfc5ae; border-radius:10px; padding:8px 10px; background:#fff; min-height:38px; }
+  textarea { width:100%; resize:vertical; }
+  .grid { display:grid; gap:14px; }
+  .g4 { grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr)); }
+  .g2 { grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr)); }
+  .cards { grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr)); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; min-width:0; }
+  .kpi small { display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .kpi b { display:block; font-size:30px; line-height:1.1; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .kpi .st { color:var(--star); font-size:22px; }
+  .delta { font-size:12px; margin-top:4px; color:var(--muted); display:flex; flex-direction:column; gap:1px; }
+  .up { color:var(--good); } .down { color:var(--bad); }
+  .btn { border:0; border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; background:var(--klein); color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn:hover { background:var(--klein-dark); }
+  .btn.light { background:var(--tint); color:var(--klein); }
+  .btn.ghost { background:#fff; color:var(--ink); border:1px solid var(--line); font-weight:500; }
+  .btn.ghost:hover { border-color:var(--klein); color:var(--klein); }
+  .btn.sm { padding:5px 9px; font-size:12px; border-radius:8px; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .note { font-size:12px; color:var(--muted); margin:6px 0 0; }
+  .warn { background:var(--warn-bg); border:1px solid #f3d9a4; color:var(--warn); border-radius:10px; padding:8px 12px; font-size:13px; }
+  .empty { color:var(--muted); padding:18px 0; text-align:center; }
+  .tabs { display:flex; gap:4px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:4px; margin:0 0 16px; width:max-content; max-width:100%; overflow:auto; }
+  .tabs a { padding:7px 14px; border-radius:9px; text-decoration:none; color:var(--muted); font-size:14px; white-space:nowrap; }
+  .tabs a.on { background:var(--tint); color:var(--klein); font-weight:700; }
+
+  /* Tarjeta de local */
+  .vcard { display:flex; flex-direction:column; gap:12px; }
+  .vcard .head { display:flex; align-items:center; gap:12px; }
+  .avatar { width:48px; height:48px; border-radius:12px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--display); font-weight:900; font-size:22px; flex:none; }
+  .vcard h3 { margin:0; font-size:18px; overflow-wrap:anywhere; }
+  .mini { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .mini div { background:var(--bg); border-radius:12px; padding:10px 12px; }
+  .mini b { font-size:22px; font-variant-numeric:tabular-nums; }
+  .mini small { display:block; font-size:12px; color:var(--muted); }
+
+  /* Tablas */
+  .tbl { width:100%; border-collapse:collapse; font-size:14px; }
+  .tbl th { text-align:left; font-size:12px; color:var(--muted); font-weight:600; padding:8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .tbl td { padding:10px 8px; border-bottom:1px solid var(--line2); vertical-align:middle; }
+  .tbl tr.off td { opacity:.5; }
+  .tbl .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .scroll { overflow-x:auto; }
+  .acts { display:flex; gap:4px; flex-wrap:wrap; }
+  .stars { color:var(--star); letter-spacing:1px; white-space:nowrap; }
+  .stars i { color:var(--star-off); font-style:normal; }
+  .dist { display:flex; height:8px; border-radius:6px; overflow:hidden; background:var(--line2); min-width:110px; gap:2px; }
+  .dist i { display:block; height:100%; }
+  .d5 { background:#002fa7 } .d4 { background:#5b7fd9 } .d3 { background:#b8c7f0 } .d2 { background:#e0a0aa } .d1 { background:#c92a42 }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+
+  /* Valoraciones */
+  .rv { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:6px; }
+  .rv.low { border-left:4px solid var(--bad); }
+  .rv .meta { display:flex; gap:8px 14px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--muted); }
+  .rv .meta b { color:var(--ink); }
+  .rv .cm { background:var(--bg); border-radius:10px; padding:8px 12px; }
+  .rv .row { display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; }
+  .tag { font-size:11px; font-weight:700; border-radius:99px; padding:3px 8px; }
+  .tag.ok { background:#e3f4ea; color:var(--good); } .tag.pend { background:#f6e3e6; color:var(--bad); }
+  .pager { display:flex; gap:8px; justify-content:center; align-items:center; margin-top:14px; }
+  .topics { display:flex; gap:6px; flex-wrap:wrap; }
+  .topics span { background:var(--tint); color:var(--klein); border-radius:99px; padding:4px 10px; font-size:13px; }
+  .topics span.low { background:#f6e3e6; color:var(--bad); }
+  .ai { white-space:pre-wrap; background:var(--bg); border-radius:12px; padding:14px 16px; line-height:1.55; }
+
+  /* Gráficas */
+  .chart svg { width:100%; height:auto; display:block; overflow:visible; }
+  .chart .axis { stroke:var(--line); }
+  .chart text { font-size:11px; fill:var(--muted); font-family:var(--body); }
+  .chart .bar { fill:var(--klein); }
+  .chart .bar:hover { fill:var(--klein-dark); }
+  .chart .line { stroke:var(--klein); stroke-width:2; fill:none; }
+  .chart .pt { fill:var(--klein); stroke:#fff; stroke-width:2; }
+  .chart .val { fill:var(--ink); font-weight:700; }
+
+  /* Progreso */
+  .prog { height:10px; background:var(--line2); border-radius:6px; overflow:hidden; }
+  .prog i { display:block; height:100%; background:var(--klein); border-radius:6px; }
+  .prog.ok i { background:var(--good); }
+
+  dialog { border:0; border-radius:18px; padding:0; max-width:440px; width:calc(100% - 32px); box-shadow:0 30px 80px #0b1f3a55; }
+  dialog::backdrop { background:#0b1f3a88; }
+  .dlg { padding:22px; display:flex; flex-direction:column; gap:12px; }
+  .dlg h3 { margin:0; font-size:20px; }
+  .cred { background:var(--bg); border-radius:12px; padding:12px 14px; display:grid; grid-template-columns:auto 1fr; gap:6px 12px; font-size:14px; }
+  .cred span { color:var(--muted); } .cred b { font-family:ui-monospace,Menlo,monospace; overflow-wrap:anywhere; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; z-index:30; }
+  .toast.show { opacity:1; }
+  .skel { color:var(--muted); padding:30px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="burger" id="burger" aria-label="Menú">☰</button>
+  <a class="brand" href="#/inicio">Top<span>Review</span></a>
+  <div class="live"><span class="dot" id="dot"></span><span id="liveTxt">En directo</span></div>
+  <div class="who"><b id="whoName"></b><small id="whoKind"></small></div>
+  <a class="out" href="/logout">Salir</a>
+</header>
+<div class="shell">
+  <nav class="side" id="side">
+    <a href="#/inicio" data-r="inicio"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</a>
+    <a href="#/locales" data-r="locales"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Locales</a>
+    <a href="#/camareros" data-r="camareros"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></svg>Camareros</a>
+    <a href="#/valoraciones" data-r="valoraciones"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Valoraciones</a>
+    <div class="sub" id="subVal"><a href="#/valoraciones" data-s="lista">Todas</a><a href="#/valoraciones/analisis" data-s="analisis">Análisis IA</a></div>
+    <a href="#/objetivos" data-r="objetivos"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>Objetivos y bonus</a>
+    <a href="#/configuracion" data-r="configuracion"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Configuración</a>
+    <div class="foot"><a href="/camareros" target="_blank">Web para camareros ↗</a><br>TopReview</div>
+  </nav>
+  <main id="view"><p class="skel">Cargando…</p></main>
+</div>
+
+<dialog id="dlg"><div class="dlg">
+  <h3 id="dTitle"></h3>
+  <p class="note" style="margin:0">Guarda esta contraseña ahora: no se vuelve a mostrar. Si se pierde, genera otra.</p>
+  <div class="cred"><span>Entrar en</span><b id="dUrl"></b><span>Usuario</span><b id="dUser"></b><span>Contraseña</span><b id="dPass"></b></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn light" id="dCopy">Copiar para enviar</button><button class="btn" id="dClose">Hecho</button></div>
+</div></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const eur = (n) => (+n || 0).toLocaleString('es-ES', { style:'currency', currency:'EUR' });
+const num = (n, d = 2) => n == null ? '–' : (+n).toLocaleString('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtDate = (s) => new Date(s.replace(' ', 'T') + 'Z').toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const view = $('#view');
+let ME = null;
+const state = { period: '30d', from: '', to: '', venue: 'all' };
+try { Object.assign(state, JSON.parse(localStorage.getItem('tr_panel') || '{}')); } catch {}
+const save = () => { try { localStorage.setItem('tr_panel', JSON.stringify(state)); } catch {} };
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500); }
+async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg || 'Copiado'); } catch { prompt('Copia este texto:', text); } }
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent('/panel' + location.hash); throw new Error('401'); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Error ' + r.status);
+  return d;
+}
+const qs = (o) => Object.entries(o).filter(([, v]) => v !== '' && v != null).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
+const periodQ = () => state.period === 'custom' ? { from: state.from, to: state.to } : { period: state.period };
+const venueName = (id) => ME.venues.find(v => v.id === +id)?.name || '';
+const activeVenues = () => ME.venues.filter(v => v.active);
+const starsHtml = (n) => '★'.repeat(n) + '<i>' + '★'.repeat(5 - n) + '</i>';
+
+// ---------- Controles comunes ----------
+function periodBar(onChange) {
+  const opts = [['7d','7 días'],['30d','30 días'],['month','Este mes'],['prev_month','Mes anterior'],['all','Global'],['custom','Fechas']];
+  const wrap = document.createElement('div'); wrap.className = 'bar';
+  wrap.innerHTML = opts.map(([k, l]) => `<button class="chip ${state.period === k ? 'on' : ''}" data-p="${k}">${l}</button>`).join('') +
+    `<span id="custom" style="display:${state.period === 'custom' ? 'flex' : 'none'};gap:6px;align-items:center"><input type="date" id="dFrom" value="${state.from}" aria-label="Desde"> <span class="note" style="margin:0">al</span> <input type="date" id="dTo" value="${state.to}" aria-label="Hasta"></span>`;
+  wrap.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    state.period = b.dataset.p;
+    if (state.period === 'custom' && !state.from) { const t = new Date(); state.to = t.toISOString().slice(0,10); t.setDate(t.getDate() - 30); state.from = t.toISOString().slice(0,10); }
+    save(); onChange();
+  });
+  const dc = () => { state.from = $('#dFrom', wrap).value; state.to = $('#dTo', wrap).value; if (state.from && state.to) { save(); onChange(); } };
+  $('#dFrom', wrap).onchange = dc; $('#dTo', wrap).onchange = dc;
+  return wrap;
+}
+function venueSelect(id, { all = true, value = state.venue } = {}) {
+  const vs = ME.venues;
+  if (vs.length === 1) return `<input type="hidden" id="${id}" value="${vs[0].id}">`;
+  return `<div class="field"><label for="${id}">Local</label><select id="${id}">${all ? `<option value="all">Todos los locales</option>` : ''}${vs.map(v => `<option value="${v.id}" ${String(value) === String(v.id) ? 'selected' : ''}>${esc(v.name)}${v.active ? '' : ' (desactivado)'}</option>`).join('')}</select></div>`;
+}
+const pickVenue = (v) => (v && v !== 'all' && ME.venues.some(x => String(x.id) === String(v))) ? String(v) : String(activeVenues()[0]?.id || ME.venues[0]?.id || '');
+function deltaLine(cur, prev, label, digits = 2, unit = '') {
+  if (cur == null || prev == null) return `<span>— ${label}</span>`;
+  const d = cur - prev; if (Math.abs(d) < 1e-9) return `<span>= ${label}</span>`;
+  return `<span class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲ +' : '▼ '}${num(d, digits)}${unit} ${label}</span>`;
+}
+
+// ---------- Gráficas (una medida por gráfica, sin doble eje) ----------
+function barChart(series, key, { label = '', max } = {}) {
+  const W = 520, H = 200, L = 30, B = 26, T = 18;
+  const vals = series.map(s => s[key] || 0); const m = max || Math.max(1, ...vals);
+  const bw = (W - L) / series.length;
+  let g = `<line class="axis" x1="${L}" y1="${H - B}" x2="${W}" y2="${H - B}"/>`;
+  [0, .5, 1].forEach(f => { const y = H - B - f * (H - B - T); g += `<text x="${L - 6}" y="${y + 4}" text-anchor="end">${Math.round(m * f)}</text>`; });
+  series.forEach((s, i) => {
+    const v = s[key] || 0, h = v / m * (H - B - T), x = L + i * bw + bw * .22, w = bw * .56, y = H - B - h;
+    const [yy, mm] = s.month.split('-');
+    if (v > 0) g += `<path class="bar" d="M${x},${H - B} V${y + 4} q0,-4 4,-4 h${w - 8} q4,0 4,4 V${H - B} Z"><title>${MONTHS[+mm - 1]} ${yy}: ${v} ${label}</title></path><text class="val" x="${x + w / 2}" y="${y - 5}" text-anchor="middle">${v}</text>`;
+    g += `<text x="${x + w / 2}" y="${H - 8}" text-anchor="middle">${MONTHS[+mm - 1]}</text>`;
+  });
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)} por mes">${g}</svg></div>`;
+}
+function lineChart(series, key) {
+  const W = 520, H = 200, L = 30, B = 26, T = 14, lo = 1, hi = 5;
+  const bw = (W - L) / series.length, ys = (v) => H - B - (v - lo) / (hi - lo) * (H - B - T);
+  let g = `<line class="axis" x1="${L}" y1="${H - B}" x2="${W}" y2="${H - B}"/>`;
+  [1, 2, 3, 4, 5].forEach(v => { g += `<text x="${L - 6}" y="${ys(v) + 4}" text-anchor="end">${v}</text><line x1="${L}" x2="${W}" y1="${ys(v)}" y2="${ys(v)}" stroke="#efe7d6"/>`; });
+  let path = '', pts = '';
+  series.forEach((s, i) => {
+    const x = L + i * bw + bw / 2, [yy, mm] = s.month.split('-');
+    g += `<text x="${x}" y="${H - 8}" text-anchor="middle">${MONTHS[+mm - 1]}</text>`;
+    if (s[key] == null) { path += ' '; return; }
+    const y = ys(s[key]); path += (path.trim() && !path.endsWith(' ') ? ' L' : ' M') + x + ',' + y;
+    pts += `<circle class="pt" cx="${x}" cy="${y}" r="5"><title>${MONTHS[+mm - 1]} ${yy}: ${num(s[key])} ★</title></circle>`;
+  });
+  const last = [...series].reverse().find(s => s[key] != null);
+  if (last) { const i = series.indexOf(last); pts += `<text class="val" x="${L + i * bw + bw / 2}" y="${ys(last[key]) - 10}" text-anchor="middle">${num(last[key])}</text>`; }
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Media de estrellas por mes">${g}<path class="line" d="${path.replace(/\s+/g, ' ').trim()}"/>${pts}</svg></div>`;
+}
+function dist(stars, total) {
+  if (!total) return '<div class="dist"></div>';
+  return '<div class="dist">' + [5,4,3,2,1].map(n => stars[n] ? `<i class="d${n}" style="flex:${stars[n]}" title="${n}★: ${stars[n]}"></i>` : '').join('') + '</div>';
+}
+const distLegend = '<div class="legend">' + [5,4,3,2,1].map(n => `<span><i class="d${n}"></i>${n}★</span>`).join('') + '</div>';
+
+// ---------- Vistas ----------
+async function vInicio() {
+  view.innerHTML = `<h1>Resumen</h1>`;
+  view.append(periodBar(render));
+  const box = document.createElement('div'); box.className = 'grid cards'; box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  const d = await api('/api/panel/summary?' + qs(periodQ()));
+  if (!d.cards.length) { box.innerHTML = `<div class="card empty">Aún no hay locales. ${ME.kind === 'account' ? '<a href="#/configuracion">Crea el primero en Configuración</a>.' : ''}</div>`; return; }
+  box.innerHTML = d.cards.map(c => {
+    const goalTxt = c.goal_ratings ? (c.cur.ratings >= c.goal_ratings ? `<span class="up">✓ Objetivo de ${c.goal_ratings} valoraciones cumplido</span>` : `Faltan <b>${c.goal_ratings - c.cur.ratings}</b> valoraciones para el objetivo (${c.goal_ratings})`) : '<span>Sin objetivo de valoraciones</span>';
+    return `<article class="card vcard">
+      <div class="head"><div class="avatar">${esc(c.name.charAt(0).toUpperCase())}</div><div style="min-width:0"><h3>${esc(c.name)}</h3><small class="note" style="margin:0">${c.cur.waiters} camareros activos</small></div></div>
+      <div class="mini">
+        <div><b>${num(c.cur.avg)}</b> <span class="stars">★</span><small>Media del periodo</small><div class="delta">${deltaLine(c.cur.avg, c.prev.avg, 'vs. anterior')}</div></div>
+        <div><b>${c.cur.ratings}</b><small>Valoraciones</small><div class="delta">${deltaLine(c.cur.ratings, c.prev.ratings, 'vs. anterior', 0)}</div></div>
+        <div><b>${c.cur.google_clicks}</b><small>Enviados a Google</small></div>
+        <div><b class="${c.cur.pending_comments ? 'down' : ''}">${c.cur.pending_comments}</b><small>Quejas sin resolver</small></div>
+      </div>
+      <div class="note" style="margin:0">${goalTxt}</div>
+      ${c.has_google ? '' : '<div class="warn">Falta el enlace de reseñas de Google de este local.</div>'}
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="#/locales/${c.id}">Ver local</a><a class="btn ghost" href="#/valoraciones?venue=${c.id}">Valoraciones</a></div>
+    </article>`;
+  }).join('');
+}
+
+async function vLocales(id) {
+  id = pickVenue(id);
+  if (!id) { view.innerHTML = '<h1>Local</h1><div class="card empty">No hay locales.</div>'; return; }
+  view.innerHTML = `<h1>Local</h1><div class="bar">${venueSelect('vSel', { all: false, value: id })}</div>`;
+  const sel = $('#vSel'); if (sel && sel.tagName === 'SELECT') sel.onchange = () => location.hash = '#/locales/' + sel.value;
+  view.append(periodBar(render));
+  const box = document.createElement('div'); box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  const d = await api(`/api/panel/venue/${id}?` + qs(periodQ()));
+  const c = d.cur;
+  box.innerHTML = `
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="card kpi"><small>Media del periodo</small><b>${num(c.avg)} <span class="st">★</span></b><div class="delta">${deltaLine(c.avg, d.prev.avg, 'vs. periodo anterior')}${deltaLine(c.avg, d.global.avg, 'vs. nota global')}${d.goal_avg ? deltaLine(c.avg, d.goal_avg, 'vs. objetivo (' + num(d.goal_avg) + ')') : ''}</div></div>
+      <div class="card kpi"><small>Valoraciones</small><b>${c.ratings}</b><div class="delta">${deltaLine(c.ratings, d.prev.ratings, 'vs. periodo anterior', 0)}${d.goal_ratings ? deltaLine(c.ratings, d.goal_ratings, 'frente al objetivo (' + d.goal_ratings + ')', 0) : ''}</div></div>
+      <div class="card kpi"><small>Enviados a Google</small><b>${c.google_clicks}</b><div class="delta">${deltaLine(c.google_clicks, d.prev.google_clicks, 'vs. periodo anterior', 0)}<span>${c.ratings ? Math.round(c.google_clicks / c.ratings * 100) : 0} % de las valoraciones</span></div></div>
+      <div class="card kpi"><small>Quejas sin resolver</small><b class="${c.pending_comments ? 'down' : ''}">${c.pending_comments}</b><div class="delta"><a href="#/valoraciones?venue=${id}&status=pending">Ver comentarios →</a></div></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="card"><h2>Valoraciones por mes</h2>${barChart(d.monthly, 'n', { label: 'valoraciones' })}</div>
+      <div class="card"><h2>Media de estrellas por mes</h2>${lineChart(d.monthly, 'avg')}<p class="note">Nota global del local: <b>${num(d.global.avg)} ★</b> (${d.global.ratings} valoraciones)</p></div>
+    </div>
+    <div class="card"><h2>Ranking de camareros</h2>
+      <div class="scroll"><table class="tbl"><thead><tr><th>#</th><th>Camarero</th><th class="num">Valoraciones</th><th>Reparto</th><th class="num">Media</th><th class="num">A Google</th><th class="num">Bonus</th></tr></thead><tbody>
+      ${[...c.ranking].filter(w => w.active).sort((a, b) => b.ratings - a.ratings || (b.avg || 0) - (a.avg || 0)).map((w, i) => `<tr><td><b>${i + 1}</b></td><td><b>${esc(w.name)}</b>${w.ratings < 3 ? ' <span class="note">· pocas valoraciones</span>' : ''}</td><td class="num">${w.ratings}</td><td>${dist(w.stars, w.ratings)}</td><td class="num"><b class="${w.avg >= 4.5 ? 'up' : w.avg && w.avg < 3.5 ? 'down' : ''}">${num(w.avg)}</b></td><td class="num">${w.google_clicks}</td><td class="num">${eur(w.bonus)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">Aún no hay camareros en este local.</td></tr>'}
+      </tbody></table></div>${distLegend}</div>`;
+}
+
+async function vCamareros() {
+  const vq = new URLSearchParams(location.hash.split('?')[1] || '').get('venue');
+  if (vq) state.venue = vq;
+  view.innerHTML = `<h1>Camareros</h1>`;
+  const bar = document.createElement('div'); bar.className = 'bar'; bar.innerHTML = venueSelect('vSel'); view.append(bar);
+  const sel = $('#vSel'); if (sel && sel.tagName === 'SELECT') { sel.value = ME.venues.some(v => String(v.id) === String(state.venue)) ? state.venue : 'all'; sel.onchange = () => { state.venue = sel.value; save(); render(); }; }
+  view.append(periodBar(render));
+  const box = document.createElement('div'); box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  const venue = sel ? sel.value : 'all';
+  const d = await api('/api/panel/waiters?' + qs({ venue, ...periodQ() }));
+  const multi = ME.venues.length > 1;
+  box.innerHTML = `<div class="card" style="margin-bottom:14px"><h2>Dar de alta un camarero</h2>
+      <form id="addW" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field" style="flex:1;min-width:180px"><label for="wName">Nombre</label><input type="text" id="wName" required maxlength="60" placeholder="Ej. Laura"></div>
+        ${multi ? `<div class="field"><label for="wVenue">Local</label><select id="wVenue">${activeVenues().map(v => `<option value="${v.id}" ${String(v.id) === String(venue) ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select></div>` : `<input type="hidden" id="wVenue" value="${ME.venues[0]?.id || ''}">`}
+        <button class="btn">Crear perfil y QR</button>
+      </form><p class="note">Se crea su QR personal, la tarjeta para imprimir y su panel privado en el móvil.</p></div>
+    <div class="card"><div class="scroll"><table class="tbl"><thead><tr><th>Camarero</th>${multi ? '<th>Local</th>' : ''}<th class="num">Escaneos</th><th class="num">Valoraciones</th><th class="num">Media</th><th class="num">A Google</th><th class="num">Bonus</th><th>Acciones</th></tr></thead><tbody>
+    ${d.waiters.sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name)).map(w => `<tr class="${w.active ? '' : 'off'}">
+      <td><b>${esc(w.name)}</b></td>${multi ? `<td>${esc(w.venue)}</td>` : ''}
+      <td class="num">${w.scans}</td><td class="num">${w.ratings}</td><td class="num">${num(w.avg)}</td><td class="num">${w.google_clicks}</td><td class="num">${eur(w.bonus)}</td>
+      <td><div class="acts">
+        <a class="btn sm ghost" target="_blank" href="/admin/card/${w.id}?v=${w.venue_id}">Tarjeta QR</a>
+        <button class="btn sm ghost" data-copy="${esc(d.base + '/me/' + w.token)}" data-msg="Enlace del panel copiado: envíaselo al camarero">Su panel</button>
+        <button class="btn sm ghost" data-copy="${esc(d.base + '/r/' + w.slug)}" data-msg="Enlace de valoración copiado (para NFC)">Enlace NFC</button>
+        <a class="btn sm ghost" href="#/valoraciones?venue=${w.venue_id}&waiter=${w.id}">Valoraciones</a>
+        <button class="btn sm ghost" data-toggle="${w.id}" data-active="${w.active ? 0 : 1}">${w.active ? 'Desactivar' : 'Activar'}</button>
+      </div></td></tr>`).join('') || `<tr><td colspan="8" class="empty">Aún no hay camareros.</td></tr>`}
+    </tbody></table></div></div>`;
+  box.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copy(b.dataset.copy, b.dataset.msg));
+  box.querySelectorAll('[data-toggle]').forEach(b => b.onclick = async () => {
+    if (b.dataset.active === '0' && !confirm('¿Desactivar a este camarero? Su QR dejará de funcionar hasta que lo actives.')) return;
+    await api('/api/panel/waiters/' + b.dataset.toggle, { method: 'PATCH', body: { active: b.dataset.active === '1' } }); render();
+  });
+  $('#addW').onsubmit = async (e) => {
+    e.preventDefault();
+    const name = $('#wName').value.trim(); if (!name) return;
+    try {
+      const r = await api('/api/panel/waiters', { method: 'POST', body: { name, venue_id: +$('#wVenue').value } });
+      toast(`${r.name} dado de alta`); window.open(`/admin/card/${r.id}?v=${r.venue_id}`, '_blank'); render();
+    } catch (err) { toast(err.message); }
+  };
+}
+
+const rv = { status: '', stars: '', waiter: '', q: '', page: 1 };
+async function vValoraciones() {
+  const p = new URLSearchParams(location.hash.split('?')[1] || '');
+  if (p.get('venue')) state.venue = p.get('venue');
+  if (p.has('waiter')) rv.waiter = p.get('waiter');
+  if (p.has('status')) rv.status = p.get('status');
+  view.innerHTML = `<h1>Valoraciones</h1><div class="tabs"><a class="on" href="#/valoraciones">Todas las valoraciones</a><a href="#/valoraciones/analisis">Análisis IA</a></div>`;
+  const bar = document.createElement('div'); bar.className = 'bar';
+  bar.innerHTML = `${venueSelect('vSel')}<div class="field"><label for="wSel">Camarero</label><select id="wSel"><option value="">Todos</option></select></div>
+    <div class="field"><label for="sSel">Estrellas</label><select id="sSel"><option value="">Todas</option><option value="5">5★</option><option value="4">4★</option><option value="3">3★</option><option value="2">2★</option><option value="1">1★</option><option value="1,2,3">1–3★ (bajas)</option></select></div>
+    <div class="field"><label for="qIn">Buscar</label><input type="text" id="qIn" placeholder="Texto o camarero" value="${esc(rv.q)}"></div>`;
+  view.append(bar);
+  const sel = $('#vSel'); if (sel && sel.tagName === 'SELECT') sel.value = ME.venues.some(v => String(v.id) === String(state.venue)) ? state.venue : 'all';
+  const venue = sel ? sel.value : 'all';
+  const ws = await api('/api/panel/waiters?' + qs({ venue, period: 'all' }));
+  $('#wSel').innerHTML = '<option value="">Todos</option>' + ws.waiters.map(w => `<option value="${w.id}">${esc(w.name)}${ME.venues.length > 1 && venue === 'all' ? ' · ' + esc(w.venue) : ''}</option>`).join('');
+  $('#wSel').value = rv.waiter; $('#sSel').value = rv.stars;
+  if (sel && sel.tagName === 'SELECT') sel.onchange = () => { state.venue = sel.value; rv.waiter = ''; rv.page = 1; save(); history.replaceState(null, '', '#/valoraciones'); render(); };
+  $('#wSel').onchange = () => { rv.waiter = $('#wSel').value; rv.page = 1; history.replaceState(null, '', '#/valoraciones'); render(); };
+  $('#sSel').onchange = () => { rv.stars = $('#sSel').value; rv.page = 1; render(); };
+  let qt; $('#qIn').oninput = () => { clearTimeout(qt); qt = setTimeout(() => { rv.q = $('#qIn').value; rv.page = 1; render(); }, 400); };
+  view.append(periodBar(() => { rv.page = 1; render(); }));
+  const box = document.createElement('div'); box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  const params = { venue, waiter: rv.waiter, stars: rv.stars, status: rv.status, q: rv.q, page: rv.page, ...periodQ() };
+  const d = await api('/api/panel/ratings?' + qs(params));
+  const tab = (k, l, n) => `<button class="chip ${rv.status === k ? 'on' : ''}" data-st="${k}">${l}<span class="n">${n ?? ''}</span></button>`;
+  const pages = Math.max(1, Math.ceil(d.total / d.per));
+  box.innerHTML = `<div class="bar">${tab('', 'Todas', d.counts.all)}${tab('comments', 'Con comentario', d.counts.comments)}${tab('pending', 'Quejas sin resolver', d.counts.pending)}${tab('resolved', 'Resueltas', d.counts.resolved)}
+      <a class="btn sm ghost" style="margin-left:auto" href="/api/panel/ratings.csv?${qs(params)}">Descargar CSV</a></div>
+    <div class="grid" style="gap:10px">${d.items.map(r => `<article class="rv ${r.stars <= 3 ? 'low' : ''}">
+      <div class="row"><span class="stars" style="font-size:18px">${starsHtml(r.stars)}</span><span class="note" style="margin:0">${fmtDate(r.created_at)}</span></div>
+      <div class="meta"><span>Atendió <b>${esc(r.waiter)}</b></span>${ME.venues.length > 1 ? `<span>${esc(r.venue)}</span>` : ''}${r.resolved ? '<span class="tag ok">Resuelta</span>' : (r.stars <= 3 && r.comment ? '<span class="tag pend">Sin resolver</span>' : '')}</div>
+      ${r.comment ? `<div class="cm">${esc(r.comment)}</div>` : ''}
+      ${r.stars <= 3 || r.resolved ? `<div><button class="btn sm ${r.resolved ? 'ghost' : ''}" data-res="${r.id}" data-v="${r.resolved ? 0 : 1}">${r.resolved ? 'Marcar como pendiente' : 'Marcar como resuelta'}</button></div>` : ''}
+    </article>`).join('') || '<div class="card empty">No hay valoraciones con estos filtros.</div>'}</div>
+    ${pages > 1 ? `<div class="pager"><button class="btn sm ghost" id="prev" ${rv.page <= 1 ? 'disabled' : ''}>← Anteriores</button><span class="note" style="margin:0">Página ${rv.page} de ${pages}</span><button class="btn sm ghost" id="next" ${rv.page >= pages ? 'disabled' : ''}>Siguientes →</button></div>` : ''}`;
+  box.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { rv.status = b.dataset.st; rv.page = 1; history.replaceState(null, '', '#/valoraciones'); render(); });
+  box.querySelectorAll('[data-res]').forEach(b => b.onclick = async () => { await api(`/api/panel/ratings/${b.dataset.res}/resolve`, { method: 'POST', body: { resolved: b.dataset.v === '1' } }); render(); });
+  if ($('#prev')) $('#prev').onclick = () => { rv.page--; render(); };
+  if ($('#next')) $('#next').onclick = () => { rv.page++; render(); };
+}
+
+async function vAnalisis() {
+  view.innerHTML = `<h1>Valoraciones</h1><div class="tabs"><a href="#/valoraciones">Todas las valoraciones</a><a class="on" href="#/valoraciones/analisis">Análisis IA</a></div>`;
+  const id = pickVenue(state.venue);
+  const bar = document.createElement('div'); bar.className = 'bar'; bar.innerHTML = venueSelect('vSel', { all: false, value: id }); view.append(bar);
+  const sel = $('#vSel'); if (sel && sel.tagName === 'SELECT') sel.onchange = () => { state.venue = sel.value; save(); render(); };
+  view.append(periodBar(render));
+  const box = document.createElement('div'); box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  if (!id) { box.innerHTML = '<div class="card empty">No hay locales.</div>'; return; }
+  const d = await api('/api/panel/insights?' + qs({ venue: id, ...periodQ() }));
+  const s = d.summary;
+  box.innerHTML = `<div class="grid g4" style="margin-bottom:14px">
+      <div class="card kpi"><small>Valoraciones</small><b>${s.ratings}</b></div>
+      <div class="card kpi"><small>Con comentario</small><b>${s.comments}</b></div>
+      <div class="card kpi"><small>Bajas (1–3★)</small><b class="${s.low ? 'down' : ''}">${s.low}</b></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="card"><h2>Temas que más se repiten</h2>${s.topics.length ? `<div class="topics">${s.topics.map(t => `<span class="${t.low > t.n / 2 ? 'low' : ''}" title="${t.n} menciones, ${t.low} en valoraciones bajas">${esc(t.word)} · ${t.n}</span>`).join('')}</div><p class="note">En rojo, las palabras que salen sobre todo en valoraciones bajas.</p>` : '<p class="empty">Todavía no hay comentarios en este periodo.</p>'}</div>
+      <div class="card"><h2>Por camarero</h2><div class="scroll"><table class="tbl"><thead><tr><th>Camarero</th><th class="num">Valoraciones</th><th class="num">Media</th><th class="num">Bajas</th></tr></thead><tbody>
+        ${s.waiters.map(w => `<tr><td><b>${esc(w.waiter)}</b></td><td class="num">${w.n}</td><td class="num">${num(w.avg)}</td><td class="num ${w.low ? 'down' : ''}">${w.low}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Sin datos</td></tr>'}
+      </tbody></table></div></div>
+    </div>
+    <div class="card"><h2>Análisis con IA</h2>
+      ${d.ai_enabled ? `<p class="note" style="margin:0 0 10px">Lee todas las valoraciones y comentarios del periodo y te resume qué valoran los clientes, qué se repite en las quejas, cómo va cada camarero y qué hacer la próxima semana. Llevas ${d.ai_used} de ${d.ai_limit} análisis este mes.</p>
+        <button class="btn" id="aiGo">Analizar con IA</button><div id="aiOut" style="margin-top:12px">${d.last ? `<p class="note">Último análisis: ${fmtDate(d.last.created_at)} · periodo ${esc(d.last.period)}</p><div class="ai">${esc(d.last.result)}</div>` : ''}</div>`
+      : `<div class="warn">El análisis con IA todavía no está activado. Para activarlo hace falta una clave de API de Anthropic en la configuración del servidor (variable <code>ANTHROPIC_API_KEY</code> en Railway). Mientras tanto, arriba tienes el resumen automático.</div>`}
+    </div>`;
+  if ($('#aiGo')) $('#aiGo').onclick = async () => {
+    const b = $('#aiGo'); b.disabled = true; b.textContent = 'Analizando… (unos segundos)';
+    try { const r = await api('/api/panel/ai-analysis', { method: 'POST', body: { venue_id: +id, ...periodQ() } }); $('#aiOut').innerHTML = `<div class="ai">${esc(r.result)}</div>`; toast(`Análisis listo (${r.used}/${r.limit} este mes)`); }
+    catch (err) { $('#aiOut').innerHTML = `<div class="warn">${esc(err.message)}</div>`; }
+    b.disabled = false; b.textContent = 'Analizar con IA';
+  };
+}
+
+async function vObjetivos() {
+  const id = pickVenue(state.venue);
+  view.innerHTML = `<h1>Objetivos y bonus</h1>`;
+  const bar = document.createElement('div'); bar.className = 'bar'; bar.innerHTML = venueSelect('vSel', { all: false, value: id }); view.append(bar);
+  const sel = $('#vSel'); if (sel && sel.tagName === 'SELECT') sel.onchange = () => { state.venue = sel.value; save(); render(); };
+  if (!id) { view.insertAdjacentHTML('beforeend', '<div class="card empty">No hay locales.</div>'); return; }
+  view.append(periodBar(render));
+  const box = document.createElement('div'); box.innerHTML = '<p class="skel">Cargando…</p>'; view.append(box);
+  const d = await api('/api/panel/rewards?' + qs({ venue: id, ...periodQ() }));
+  const s = d.settings, t = d.totals;
+  const pct = (a, b) => b ? Math.min(100, Math.round(a / b * 100)) : 0;
+  box.innerHTML = `<div class="grid g2" style="margin-bottom:14px">
+    <div class="card"><h2>Configurar objetivos y bonus</h2>
+      <form id="goalF" class="grid" style="gap:12px">
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+          <div class="field"><label for="gAvg">Objetivo de nota media</label><input type="number" id="gAvg" step="0.05" min="1" max="5" value="${esc(s.goal_avg)}" placeholder="Ej. 4,6"></div>
+          <div class="field"><label for="gN">Objetivo de valoraciones del local</label><input type="number" id="gN" step="1" min="0" value="${esc(s.goal_ratings)}" placeholder="Ej. 150"></div>
+        </div>
+        <div class="field"><label>Bonus por valoración en TopReview (€)</label>
+          <div class="grid" style="grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">${[5,4,3,2,1].map(n => `<div class="field"><label for="b${n}">${n}★</label><input type="number" step="0.01" id="b${n}" value="${esc(s['bonus_' + n])}"></div>`).join('')}</div>
+          <p class="note">Puedes poner negativos para penalizar. El objetivo de valoraciones es del local, no de cada camarero.</p></div>
+        <div class="field"><label for="rMin">Invitar a Google con un toque a partir de</label><select id="rMin">${[3,4,5].map(n => `<option value="${n}" ${+s.redirect_min_stars === n ? 'selected' : ''}>${n} estrellas</option>`).join('')}</select>
+          <p class="note">Los demás clientes también ven el enlace a Google en su pantalla; nadie se queda fuera.</p></div>
+        <div><button class="btn">Guardar</button></div>
+      </form></div>
+    <div class="card"><h2>Resultado del local</h2>
+      <div class="grid" style="gap:14px">
+        <div><div class="row" style="display:flex;justify-content:space-between"><span>Nota media <b>${num(t.avg)} ★</b></span><span class="note" style="margin:0">${d.goal_avg ? 'Objetivo ' + num(d.goal_avg) : 'Sin objetivo'}</span></div>
+          ${d.goal_avg ? `<div class="prog ${t.avg >= d.goal_avg ? 'ok' : ''}"><i style="width:${pct(t.avg || 0, d.goal_avg)}%"></i></div>` : ''}</div>
+        <div><div style="display:flex;justify-content:space-between"><span>Valoraciones <b>${t.ratings}</b></span><span class="note" style="margin:0">${d.goal_ratings ? 'Objetivo ' + d.goal_ratings + ' · ' + pct(t.ratings, d.goal_ratings) + ' %' : 'Sin objetivo'}</span></div>
+          ${d.goal_ratings ? `<div class="prog ${t.ratings >= d.goal_ratings ? 'ok' : ''}"><i style="width:${pct(t.ratings, d.goal_ratings)}%"></i></div>` : ''}</div>
+        <div class="kpi"><small>Bonus acumulado del equipo</small><b style="color:var(--klein)">${eur(t.bonus)}</b></div>
+        ${dist(t.stars, t.ratings)}${distLegend}
+      </div></div>
+  </div>
+  <div class="card"><h2>Panel de recompensas</h2><div class="scroll"><table class="tbl"><thead><tr><th>Camarero</th>${[5,4,3,2,1].map(n => `<th class="num">${n}★</th>`).join('')}<th class="num">Media</th><th class="num">Bonus</th></tr></thead><tbody>
+    ${d.waiters.filter(w => w.active || w.ratings).sort((a, b) => b.bonus - a.bonus).map(w => `<tr><td><b>${esc(w.name)}</b></td>${[5,4,3,2,1].map(n => `<td class="num">${w.stars[n]}</td>`).join('')}<td class="num">${num(w.avg)}</td><td class="num"><b style="color:var(--klein)">${eur(w.bonus)}</b></td></tr>`).join('') || '<tr><td colspan="8" class="empty">Sin camareros</td></tr>'}
+  </tbody></table></div><p class="note">El bonus se calcula con las estrellas que los clientes dan en TopReview. No depende de las reseñas de Google, como exige su política.</p></div>`;
+  $('#goalF').onsubmit = async (e) => {
+    e.preventDefault();
+    const body = { goal_avg: $('#gAvg').value, goal_ratings: $('#gN').value, redirect_min_stars: $('#rMin').value };
+    [1,2,3,4,5].forEach(n => body['bonus_' + n] = $('#b' + n).value || '0');
+    try { await api(`/api/panel/venue/${id}/settings`, { method: 'PUT', body }); toast('Guardado'); render(); } catch (err) { toast(err.message); }
+  };
+}
+
+async function vConfig(tab) {
+  const isAcc = ME.kind === 'account';
+  const tabs = [['locales', isAcc ? 'Locales' : 'Mi local'], ...(isAcc ? [['cuenta', 'Mi cuenta']] : []), ...(ME.is_super ? [['portales', 'Otros portales']] : []), ['integraciones', 'Integraciones']];
+  tab = tabs.some(t => t[0] === tab) ? tab : 'locales';
+  view.innerHTML = `<h1>Configuración</h1><div class="tabs">${tabs.map(([k, l]) => `<a href="#/configuracion/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</div>`;
+  const box = document.createElement('div'); view.append(box);
+
+  if (tab === 'locales') {
+    const list = isAcc ? (await api('/api/portal/venues')).venues : ME.venues;
+    const settings = {};
+    for (const v of list) settings[v.id] = (await api(`/api/panel/venue/${v.id}?period=all`)).settings;
+    box.innerHTML = `<div class="grid" style="gap:14px">${list.map(v => `<div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div class="avatar">${esc(v.name.charAt(0).toUpperCase())}</div><h2 style="margin:0;flex:1">${esc(v.name)}</h2>${v.active ? '<span class="tag ok">Activo</span>' : '<span class="tag pend">Desactivado</span>'}</div>
+      <form class="grid vf" data-id="${v.id}" style="grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:10px;align-items:end">
+        <div class="field"><label>Nombre del local</label><input type="text" name="business_name" value="${esc(settings[v.id].business_name)}" required></div>
+        <div class="field"><label>Enlace de reseñas de Google</label><input type="url" name="google_review_url" value="${esc(settings[v.id].google_review_url)}" placeholder="https://g.page/r/XXXX/review"></div>
+        <div><button class="btn">Guardar</button></div>
+      </form>
+      <p class="note">Se saca en Google Business Profile → «Pedir reseñas». Usuario del encargado: <code>${esc(v.login)}</code></p>
+      <div class="acts" style="margin-top:10px">
+        <button class="btn sm ghost" data-copy="${esc(ME.base + '/camareros?local=' + encodeURIComponent(v.slug))}" data-msg="Enlace de la web para camareros copiado">Copiar web para camareros</button>
+        ${isAcc ? `<button class="btn sm ghost" data-pass="${v.id}" data-name="${esc(v.name)}">Nueva contraseña del encargado</button><button class="btn sm ghost" data-act="${v.id}" data-on="${v.active ? 0 : 1}" data-name="${esc(v.name)}">${v.active ? 'Desactivar local' : 'Activar local'}</button>` : ''}
+      </div></div>`).join('')}
+      ${isAcc ? `<div class="card"><h2>Añadir un local</h2><form id="newV" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;align-items:end">
+        <div class="field"><label for="nvName">Nombre</label><input type="text" id="nvName" required maxlength="80" placeholder="Ej. Restaurante Centro"></div>
+        <div class="field"><label for="nvLogin">Usuario del encargado (opcional)</label><input type="text" id="nvLogin" maxlength="40" placeholder="Ej. centro"></div>
+        <div class="field"><label for="nvG">Enlace de reseñas de Google (opcional)</label><input type="url" id="nvG" placeholder="https://g.page/r/XXXX/review"></div>
+        <div><button class="btn">Crear local</button></div></form></div>` : ''}</div>`;
+    box.querySelectorAll('form.vf').forEach(f => f.onsubmit = async (e) => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(f));
+      try { await api(`/api/panel/venue/${f.dataset.id}/settings`, { method: 'PUT', body }); toast('Local guardado'); await loadMe(); render(); } catch (err) { toast(err.message); }
+    });
+    box.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copy(b.dataset.copy, b.dataset.msg));
+    box.querySelectorAll('[data-pass]').forEach(b => b.onclick = async () => {
+      if (!confirm(`¿Generar una contraseña nueva para el encargado de ${b.dataset.name}? La anterior dejará de funcionar.`)) return;
+      const r = await api(`/api/portal/venues/${b.dataset.pass}/password`, { method: 'POST' }); showCred(b.dataset.name, r.login, r.password);
+    });
+    box.querySelectorAll('[data-act]').forEach(b => b.onclick = async () => {
+      if (b.dataset.on === '0' && !confirm(`¿Desactivar ${b.dataset.name}? Su acceso y sus QR dejarán de funcionar hasta que lo actives.`)) return;
+      await api(`/api/portal/venues/${b.dataset.act}`, { method: 'PATCH', body: { active: b.dataset.on === '1' } }); await loadMe(); render();
+    });
+    if ($('#newV')) $('#newV').onsubmit = async (e) => {
+      e.preventDefault();
+      try { const d = await api('/api/portal/venues', { method: 'POST', body: { name: $('#nvName').value.trim(), login: $('#nvLogin').value.trim(), google_review_url: $('#nvG').value.trim() } });
+        await loadMe(); render(); showCred(d.name, d.login, d.password); } catch (err) { toast(err.message); }
+    };
+  }
+
+  if (tab === 'cuenta') {
+    box.innerHTML = `<div class="card" style="max-width:520px"><h2>Mi cuenta</h2><form id="accF" class="grid" style="gap:10px">
+      <div class="field"><label for="accName">Nombre del portal</label><input type="text" id="accName" value="${esc(ME.name)}" required maxlength="80"></div>
+      <div><button class="btn">Guardar</button></div></form>
+      <p class="note">Tu usuario de acceso${ME.is_super ? ' (portal principal) se cambia en la configuración del servidor.' : ' y tu contraseña te los da quien gestiona TopReview.'}</p></div>`;
+    $('#accF').onsubmit = async (e) => { e.preventDefault(); await api('/api/portal/me', { method: 'PATCH', body: { name: $('#accName').value.trim() } }); await loadMe(); toast('Guardado'); };
+  }
+
+  if (tab === 'portales') {
+    const accts = await api('/api/portal/accounts');
+    box.innerHTML = `<p class="note" style="margin:0 0 12px;max-width:70ch">Para otros negocios. Cada portal gestiona sus propios locales con su usuario y contraseña. Desde aquí solo los creas, les das acceso o se lo cortas: no ves sus datos.</p>
+      <div class="grid cards" style="margin-bottom:14px">${accts.map(a => `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><h2 style="margin:0">${esc(a.name)}</h2>${a.active ? '<span class="tag ok">Activo</span>' : '<span class="tag pend">Desactivado</span>'}</div>
+        <p class="note">Usuario <code>${esc(a.login)}</code> · ${a.venues} ${a.venues === 1 ? 'local' : 'locales'}</p>
+        <div class="acts"><button class="btn sm ghost" data-ap="${a.id}" data-name="${esc(a.name)}">Nueva contraseña</button><button class="btn sm ghost" data-aa="${a.id}" data-on="${a.active ? 0 : 1}" data-name="${esc(a.name)}">${a.active ? 'Desactivar' : 'Activar'}</button></div></div>`).join('') || '<div class="card empty">Aún no hay otros portales.</div>'}</div>
+      <div class="card"><h2>Crear un portal</h2><form id="newA" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:10px;align-items:end">
+        <div class="field"><label for="naName">Nombre del portal</label><input type="text" id="naName" required maxlength="80" placeholder="Ej. Grupo Ejemplo"></div>
+        <div class="field"><label for="naLogin">Usuario (opcional)</label><input type="text" id="naLogin" maxlength="40"></div>
+        <div><button class="btn">Crear portal</button></div></form></div>`;
+    box.querySelectorAll('[data-ap]').forEach(b => b.onclick = async () => {
+      if (!confirm(`¿Generar una contraseña nueva para el portal ${b.dataset.name}?`)) return;
+      const r = await api(`/api/portal/accounts/${b.dataset.ap}/password`, { method: 'POST' }); showCred('Portal ' + b.dataset.name, r.login, r.password);
+    });
+    box.querySelectorAll('[data-aa]').forEach(b => b.onclick = async () => {
+      if (b.dataset.on === '0' && !confirm(`¿Desactivar el portal ${b.dataset.name}? Ni él ni sus locales podrán entrar y sus QR dejarán de funcionar.`)) return;
+      await api(`/api/portal/accounts/${b.dataset.aa}`, { method: 'PATCH', body: { active: b.dataset.on === '1' } }); render();
+    });
+    $('#newA').onsubmit = async (e) => { e.preventDefault(); const d = await api('/api/portal/accounts', { method: 'POST', body: { name: $('#naName').value.trim(), login: $('#naLogin').value.trim() } }); render(); showCred('Portal ' + d.name, d.login, d.password); };
+  }
+
+  if (tab === 'integraciones') {
+    box.innerHTML = `<div class="grid g2">
+      <div class="card"><h2>Reseñas de Google en el panel</h2><span class="tag pend">Próximamente</span>
+        <p class="note">Para leer y contestar desde aquí las reseñas de tu ficha de Google, TopReview necesita que Google apruebe su acceso a la API de Google Business Profile. Se pide una vez para toda la plataforma. Después, cada local solo tiene que pulsar «Conectar cuenta de Google» y autorizar su ficha.</p></div>
+      <div class="card"><h2>Análisis con IA</h2>${ME.ai_enabled ? '<span class="tag ok">Activado</span><p class="note">Disponible en Valoraciones → Análisis IA.</p>' : '<span class="tag pend">No activado</span><p class="note">Se activa añadiendo la variable <code>ANTHROPIC_API_KEY</code> en Railway. Mientras tanto funciona el resumen automático.</p>'}</div>
+      <div class="card"><h2>Exportar datos</h2><p class="note">En Valoraciones puedes descargar en CSV las valoraciones filtradas, con fecha, local, camarero, estrellas y comentario.</p></div>
+    </div>`;
+  }
+}
+
+function showCred(title, login, password) {
+  $('#dTitle').textContent = title; $('#dUrl').textContent = ME.base + '/login'; $('#dUser').textContent = login; $('#dPass').textContent = password;
+  $('#dCopy').onclick = () => copy(`TopReview · ${title}\nEntrar en: ${ME.base}/login\nUsuario: ${login}\nContraseña: ${password}`, 'Acceso copiado');
+  $('#dlg').showModal();
+}
+$('#dClose').onclick = () => $('#dlg').close();
+
+// ---------- Router ----------
+const routes = { inicio: vInicio, locales: vLocales, camareros: vCamareros, valoraciones: vValoraciones, objetivos: vObjetivos, configuracion: vConfig };
+let rendering = 0;
+async function render() {
+  const [path] = (location.hash.slice(2) || 'inicio').split('?');
+  const [r, arg] = path.split('/');
+  const name = routes[r] ? r : 'inicio';
+  document.querySelectorAll('nav.side a[data-r]').forEach(a => a.classList.toggle('on', a.dataset.r === name));
+  document.querySelectorAll('#subVal a').forEach(a => a.classList.toggle('on', name === 'valoraciones' && a.dataset.s === (arg === 'analisis' ? 'analisis' : 'lista')));
+  $('#subVal').style.display = name === 'valoraciones' ? 'flex' : 'none';
+  document.body.classList.remove('menu');
+  const my = ++rendering;
+  try {
+    if (name === 'valoraciones' && arg === 'analisis') await vAnalisis();
+    else await routes[name](arg);
+  } catch (err) { if (my === rendering && err.message !== '401') view.innerHTML = `<div class="warn">No se pudo cargar: ${esc(err.message)}</div>`; }
+}
+async function loadMe() {
+  ME = await api('/api/panel/me');
+  $('#whoName').textContent = ME.name;
+  $('#whoKind').textContent = ME.kind === 'account' ? (ME.venues.length === 1 ? '1 local' : ME.venues.length + ' locales') : 'Encargado';
+  document.title = 'Panel · ' + ME.name;
+}
+$('#burger').onclick = () => document.body.classList.toggle('menu');
+window.addEventListener('hashchange', render);
+
+// Tiempo real: refresca la vista actual (salvo formularios de configuración)
+let rt;
+function connect() {
+  const es = new EventSource('/api/panel/stream');
+  es.onopen = () => { $('#dot').classList.remove('off'); $('#liveTxt').textContent = 'En directo'; };
+  es.onerror = () => { $('#dot').classList.add('off'); $('#liveTxt').textContent = 'Reconectando…'; };
+  es.onmessage = (m) => {
+    const ev = JSON.parse(m.data);
+    if (ev.type === 'rating') toast(`${ev.waiter}: ${ev.stars} ★`);
+    const r = (location.hash.slice(2) || 'inicio').split(/[/?]/)[0];
+    if (['configuracion', 'objetivos'].includes(r) || location.hash.includes('analisis')) return;
+    clearTimeout(rt); rt = setTimeout(render, 600);
+  };
+}
+loadMe().then(() => { render(); connect(); }).catch(() => {});
+</script>
+</body>
+</html>
