@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TopReview · Dashboard</title>
 <style>
-  :root { --bg:#f7f1e3; --panel:#fff; --ink:#0b1f3a; --muted:#4b5a73; --line:#e3d9c4; --brand:#002fa7; --gold:#f2b705; --good:#16824a; --bad:#c92a42; }
+  :root { --bg:#F7F7F7; --panel:#fff; --ink:#202427; --muted:#6B6F72; --line:#E3E6E7; --brand:#14636D; --gold:#FFC600; --good:#1D7A5F; --bad:#B0372A; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  header { background:#0b1f3a; color:#fff; padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .brand { font-weight:900; font-size:22px; } .brand span { color:#9fb4ee; }
-  .venue { font-weight:700; font-size:15px; color:#fff; padding-left:12px; border-left:1px solid #2c4166; }
-  .back { color:#c9d3e6; font-size:13px; text-decoration:none; border:1px solid #2c4166; border-radius:8px; padding:5px 10px; }
-  .back:hover { color:#fff; border-color:#9fb4ee; }
+  header { background:#14636D; color:#fff; padding:14px 20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .brand { font-weight:900; font-size:22px; } .brand span { color:#C9EBE5; }
+  .venue { font-weight:700; font-size:15px; color:#fff; padding-left:12px; border-left:1px solid #4A5A5E; }
+  .back { color:#D5DADC; font-size:13px; text-decoration:none; border:1px solid #4A5A5E; border-radius:8px; padding:5px 10px; }
+  .back:hover { color:#fff; border-color:#C9EBE5; }
   .live { font-size:12px; display:flex; align-items:center; gap:6px; color:#a7f3d0; }
   .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 #22c55e; animation:pulse 1.6s infinite; }
   .dot.off { background:#ef4444; animation:none; }
   @keyframes pulse { 70% { box-shadow:0 0 0 8px transparent; } }
   header .sp { flex:1; }
   select, input, button { font:inherit; }
-  header select { background:#132a4d; color:#fff; border:1px solid #2c4166; border-radius:8px; padding:6px 10px; }
+  header select { background:#0F535C; color:#fff; border:1px solid #4A5A5E; border-radius:8px; padding:6px 10px; }
   main { max-width:1200px; margin:0 auto; padding:20px 16px 60px; }
   .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:18px; }
   .kpi { background:var(--panel); border-radius:14px; padding:14px 16px; border:1px solid var(--line); }
@@ -57,7 +57,7 @@
   form.row input { flex:1; min-width:160px; }
   input[type=text], input[type=url], input[type=number] { border:1px solid #cbd5e1; border-radius:10px; padding:9px 12px; width:100%; }
   .btn { background:var(--brand); color:#fff; border:0; border-radius:10px; padding:9px 16px; font-weight:700; cursor:pointer; }
-  .btn.light { background:#e6ecfa; color:var(--brand); }
+  .btn.light { background:#E3F3F0; color:var(--brand); }
   .settings { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .settings label { font-size:13px; color:var(--muted); display:block; }
   .settings .full { grid-column:1/-1; }
@@ -66,9 +66,9 @@
   .note { font-size:12px; color:var(--muted); margin:6px 0 0; }
   .warn { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; padding:10px 12px; border-radius:10px; font-size:14px; margin-bottom:16px; }
   .chart { display:flex; align-items:flex-end; gap:3px; height:90px; margin-top:6px; }
-  .chart div { flex:1; max-width:40px; background:#b8c7f0; border-radius:4px 4px 0 0; min-height:2px; position:relative; }
+  .chart div { flex:1; max-width:40px; background:#C9EBE5; border-radius:4px 4px 0 0; min-height:2px; position:relative; }
   .chart div:hover { background:var(--brand); }
-  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#0b1f3a; color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#202427; color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; opacity:0; transition:.3s; pointer-events:none; }
   .toast.show { opacity:1; }
 </style>
 </head>
