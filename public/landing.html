@@ -59,20 +59,23 @@ nav.top .wrap{display:flex;align-items:center;gap:26px;height:68px}
 .ticks li{display:flex;gap:10px;align-items:center}.ticks .ic{width:18px;height:18px;color:var(--pet);stroke-width:2.4}
 .stage{position:relative;width:100%;max-width:540px;aspect-ratio:1;margin-left:auto}
 .stage .circle{position:absolute;inset:0;border-radius:50%;background:var(--agua)}
-.stage .sq{position:absolute;width:23%;aspect-ratio:1;border-radius:26px;background:var(--pet);left:2%;bottom:10%}
-.phone{position:absolute;left:25%;top:5%;width:52%;border-radius:40px;padding:10px;background:var(--ink);box-shadow:0 30px 60px -24px rgba(32,36,39,.45)}
-.phone .scr{border-radius:31px;background:var(--pet);padding:22px 14px;min-height:330px;display:flex;align-items:center}
-.phone .cardm{background:#fff;border-radius:20px;padding:20px 12px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px}
-.phone .cardm .logo{font-size:19px}
-.phone .av{width:52px;height:52px;border-radius:50%;background:var(--pet);color:#fff;display:grid;place-items:center;font:700 22px var(--serif)}
-.phone p{margin:0;font-weight:700;font-size:16px;line-height:1.2;color:var(--ink)}.phone p span{color:var(--pet)}
-.phone .row{display:flex;gap:2px;font-size:27px}
+.phone{position:absolute;left:29%;top:-2%;width:46%;border-radius:38px;padding:9px;background:var(--ink);box-shadow:0 36px 60px -28px rgba(32,36,39,.55)}
+.phone .scr{border-radius:30px;background:var(--pet);padding:18px 12px 14px;display:flex;flex-direction:column;gap:14px}
+.phone .top{display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--agua)}
+.phone .top .logo{color:#fff;font-size:20px}.phone .top .logo span{color:var(--agua)}.phone .top small{font-size:11.5px;color:var(--agua)}
+.phone .cardm{background:#fff;border-radius:22px;padding:22px 10px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.phone .av{width:58px;height:58px;border-radius:50%;background:var(--agua);color:var(--pet-d);display:grid;place-items:center;font:700 26px var(--serif)}
+.phone p{margin:0;font-weight:700;font-size:16px;line-height:1.25;color:var(--ink)}.phone p span{color:var(--pet)}
+.phone .row{display:flex;gap:1px;font-size:25px}
+.phone .fake{align-self:stretch;background:var(--yel);color:var(--pet-d);border-radius:99px;padding:10px 0;font:700 14px var(--sans)}
 .phone small{color:var(--muted);font-size:12px}
-.chip{position:absolute;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:13px 16px;display:flex;gap:12px;align-items:center}
-.chip .bub{width:40px;height:40px;border-radius:12px;background:var(--agua);color:var(--pet-d);display:grid;place-items:center}
+.qrtag{position:absolute;left:0;bottom:7%;width:25%;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:12px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;z-index:2}
+.qrtag .qq{width:100%;margin-bottom:6px}.qrtag b{font-size:15px}.qrtag small{font-size:12px;color:var(--muted);line-height:1.2}
+.chip{position:absolute;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:12px 14px;display:flex;gap:11px;align-items:center;z-index:2}
+.chip .bub{width:38px;height:38px;border-radius:12px;background:var(--agua);color:var(--pet-d);display:grid;place-items:center}
 .chip div{display:flex;flex-direction:column;line-height:1.25;font-size:15px}.chip small{color:var(--muted);font-size:12.5px}
-.chip.a{left:-2%;bottom:20%}
-.chip.b{right:-3%;top:60%;background:var(--ink);border-color:var(--ink);color:#fff;max-width:230px}
+.chip.a{right:-4%;top:20%}
+.chip.b{right:-5%;bottom:8%;background:var(--ink);border-color:var(--ink);max-width:215px;align-items:flex-start}
 .chip.b b{color:#fff}.chip.b small{color:var(--agua)}
 /* franja */
 .band{background:var(--pet);color:var(--agua);padding:40px 0}
@@ -173,7 +176,7 @@ footer nav{display:flex;gap:10px 24px;flex-wrap:wrap;font-size:15px}
 /* entrada del hero: una vez */
 @keyframes up{from{opacity:0;transform:translateY(14px)}}
 .hero-t>*{animation:up .7s var(--ease) both}.hero-t>:nth-child(2){animation-delay:.07s}.hero-t>:nth-child(3){animation-delay:.14s}.hero-t>:nth-child(4){animation-delay:.21s}
-.stage .circle{animation:pop .9s var(--ease) both}.stage .sq{animation:pop .9s .1s var(--ease) both}
+.stage .circle{animation:pop .9s var(--ease) both}.qrtag{animation:up .8s .3s var(--ease) both}
 @keyframes pop{from{opacity:0;transform:scale(.92)}}
 .phone{animation:up .9s .15s var(--ease) both}.chip.a{animation:up .8s .35s var(--ease) both}.chip.b{animation:up .8s .5s var(--ease) both}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.js .win:not(.in) .bar i{width:var(--w)}html{scroll-behavior:auto}}
@@ -181,9 +184,9 @@ footer nav{display:flex;gap:10px 24px;flex-wrap:wrap;font-size:15px}
 @media(max-width:900px){
 .hero{padding:36px 0 64px}.hero .wrap,.steps,.fair,.cta .wrap,.plans,.feat{grid-template-columns:1fr}
 .stage{margin:0 auto}.steps .sec-h{position:static}.mini{grid-template-columns:1fr 1fr}
-.sec,.panel-sec,.cta{padding:72px 0}.big{min-height:0}.btn{width:100%}.links .btn{width:auto}.chip.a{left:0}.chip.b{right:0}
+.sec,.panel-sec,.cta{padding:72px 0}.big{min-height:0}.btn{width:100%}.links .btn{width:auto}.chip.a{right:0}.chip.b{right:0}
 }
-@media(max-width:520px){.mini{grid-template-columns:1fr}.wrap{padding:0 20px}.kpis{grid-template-columns:1fr 1fr}.phone{left:20%;width:60%}.chip.b{display:none}.chip.a{left:0;bottom:-4%;padding:10px 14px}.stage{margin-bottom:24px}.plan{padding:28px}}
+@media(max-width:520px){.mini{grid-template-columns:1fr}.wrap{padding:0 20px}.kpis{grid-template-columns:1fr 1fr}.phone{left:26%;width:52%}.chip.b{display:none}.chip.a{right:0;top:auto;bottom:-6%;padding:10px 14px}.qrtag{width:30%}.stage{margin-bottom:28px}.plan{padding:28px}}
 </style>
 </head>
 <body>
@@ -203,12 +206,15 @@ footer nav{display:flex;gap:10px 24px;flex-wrap:wrap;font-size:15px}
 <ul class="ticks"><li><svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Sin app para el cliente</li><li><svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Respeta la política de reseñas de Google</li><li><svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Bonus del equipo listo para nóminas</li></ul>
 </div>
 <div class="stage">
-<div class="circle"></div><div class="sq"></div>
-<div class="phone"><div class="scr"><div class="cardm">
-<span class="logo">Top<span>Review</span></span><small>Tu restaurante</small>
+<div class="circle"></div>
+<div class="qrtag"><div class="qq"><svg viewBox="0 0 88 88" width="100%" aria-hidden="true"><rect x="0" y="0" width="56" height="56" rx="2" fill="#202427"/><rect x="8" y="8" width="40" height="40" rx="1" fill="#fff"/><rect x="16" y="16" width="24" height="24" rx="1" fill="#202427"/><rect x="32" y="0" width="56" height="56" rx="2" fill="#202427"/><rect x="40" y="8" width="40" height="40" rx="1" fill="#fff"/><rect x="48" y="16" width="24" height="24" rx="1" fill="#202427"/><rect x="0" y="32" width="56" height="56" rx="2" fill="#202427"/><rect x="8" y="40" width="40" height="40" rx="1" fill="#fff"/><rect x="16" y="48" width="24" height="24" rx="1" fill="#202427"/><rect x="64" y="64" width="8" height="8" rx="1.5" fill="#202427"/><rect x="64" y="72" width="8" height="8" rx="1.5" fill="#202427"/><rect x="72" y="64" width="8" height="8" rx="1.5" fill="#202427"/><rect x="72" y="80" width="8" height="8" rx="1.5" fill="#202427"/><rect x="80" y="64" width="8" height="8" rx="1.5" fill="#202427"/><rect x="80" y="80" width="8" height="8" rx="1.5" fill="#202427"/></svg></div><b>Laura</b><small>Su QR personal</small></div>
+<div class="phone"><div class="scr">
+<div class="top"><span class="logo">Top<span>Review</span></span><small>Tu restaurante</small></div>
+<div class="cardm">
 <div class="av">L</div>
 <p>¿Qué tal te ha atendido <span>Laura</span>?</p>
 <div class="row" role="img" aria-label="5 estrellas"><svg viewBox="0 0 24 24" class="st" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"/></svg><svg viewBox="0 0 24 24" class="st" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"/></svg><svg viewBox="0 0 24 24" class="st" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"/></svg><svg viewBox="0 0 24 24" class="st" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"/></svg><svg viewBox="0 0 24 24" class="st" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"/></svg></div>
+<span class="fake">Enviar valoración</span>
 <small>Son diez segundos</small>
 </div></div></div>
 <div class="chip a"><span class="bub"><svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span><div><b>Laura · 4,8</b><small>52 valoraciones este mes</small></div></div>
